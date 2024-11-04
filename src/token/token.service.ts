@@ -5,10 +5,10 @@ import * as process from 'process';
 @Injectable()
 export class TokenService {
   constructor(private readonly jwtService: JwtService) {}
-  async generateJwtToken(token: object, time: string) {
+  async generateJwtToken(token: object) {
     return this.jwtService.sign(token, {
       secret: process.env.SECRET_KEY_JWT,
-      expiresIn: time,
+      expiresIn: '20h',
     });
   }
   async verifyToken(token: string) {

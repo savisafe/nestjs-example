@@ -1,79 +1,147 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { DatabaseService } from '../database';
+import {
+  FAILED_TO_CREATE_ARTICLE,
+  FAILED_TO_RETRIEVE_ARTICLE,
+  FAILED_TO_RETRIEVE_ARTICLES,
+  NO_ARTICLE_FOUND,
+  NO_ARTICLES_FOUND,
+  YOU_DONT_OPPORTUNITY,
+} from '../consts';
+import { TokenService } from '../token';
+import { setHead } from '../functions';
+
 @Injectable()
 export class ArticlesService {
-  constructor(private readonly dataBase: DatabaseService) {}
-  async getArticlesAllUsers() {
-    return this.dataBase.article.findMany({
-      where: {
-        draft: false,
-      },
-    });
-  }
-  async getArticles() {
-    return this.dataBase.article.findMany({});
+  constructor(
+    private readonly dataBase: DatabaseService,
+    private readonly tokenService: TokenService,
+  ) {}
+  async getArticles(response) {
+    try {
+      setHead(response);
+      return this.dataBase.article.findMany({});
+    } catch (error) {
+      throw new InternalServerErrorException(
+        FAILED_TO_RETRIEVE_ARTICLES,
+        error,
+      );
+    }
   }
   async getCategoryArticles(category) {
-    return this.dataBase.article.findMany({
+    const articles = await this.dataBase.article.findMany({
       where: {
         category,
         draft: false,
       },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        date: true,
-        author: true,
-        category: true,
-      },
     });
+    if (articles.length === 0)
+      throw new HttpException(NO_ARTICLES_FOUND, HttpStatus.BAD_REQUEST);
+    return articles;
   }
   async findArticle(id) {
-    return this.dataBase.article.findFirst({
+    const article = await this.dataBase.article.findFirst({
       where: {
         id,
       },
     });
+    if (!article)
+      throw new HttpException(NO_ARTICLE_FOUND, HttpStatus.BAD_REQUEST);
+    return article;
   }
-  async addArticle(data) {
-    const { title, description, author, category } = data;
-    return this.dataBase.article.create({
-      data: {
-        title,
-        description,
-        date: new Date(),
-        author,
-        category,
-        draft: true,
-        language: 'lang_1',
-      },
-    });
+  async addArticle(data, response, request) {
+    setHead(response);
+    const { title, description, author, category, language } = data;
+    const token = request.cookies.token;
+    if (!token)
+      throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+    try {
+      const user = await this.tokenService.verifyToken(token);
+      const findUser = await this.dataBase.admin.findUnique({
+        where: { id: user.id },
+      });
+      const createArticle = await this.dataBase.article.create({
+        data: {
+          title,
+          description,
+          date: new Date(),
+          author,
+          category,
+          draft: true,
+          language,
+        },
+      });
+      if (!createArticle || !findUser) return YOU_DONT_OPPORTUNITY;
+      return createArticle;
+    } catch (error) {
+      throw new InternalServerErrorException(FAILED_TO_CREATE_ARTICLE, error);
+    }
   }
-  async editArticle(data) {
-    const { title, description, date, author, category, draft, language } =
+  async editArticle(data, response, request) {
+    setHead(response);
+    const { id, title, description, date, author, category, draft, language } =
       data;
-    return this.dataBase.article.update({
-      where: {
-        id: data.id,
-      },
-      data: {
-        title,
-        description,
-        date,
-        author,
-        category,
-        language,
-        draft,
-      },
-    });
+    try {
+      const token = request.cookies.token;
+      if (!token) return YOU_DONT_OPPORTUNITY;
+      const user = await this.tokenService.verifyToken(token);
+      const findUser = await this.dataBase.admin.findUnique({
+        where: { id: user.id },
+      });
+      const findArticle = await this.dataBase.article.findUnique({
+        where: {
+          id: data.id,
+        },
+      });
+      if (!findArticle || !findUser) return NO_ARTICLE_FOUND;
+      return this.dataBase.article.update({
+        where: {
+          id,
+        },
+        data: {
+          title,
+          description,
+          date,
+          author,
+          category,
+          language,
+          draft,
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(FAILED_TO_RETRIEVE_ARTICLE, error);
+    }
   }
-  async deleteArticle(data) {
+  async deleteArticle(data, response, request) {
+    setHead(response);
     const { id } = data;
-    return this.dataBase.article.delete({
-      where: {
-        id,
-      },
-    });
+    const token = request.cookies.token;
+    if (!token)
+      throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+    try {
+      const user = await this.tokenService.verifyToken(token);
+      const findUser = await this.dataBase.admin.findUnique({
+        where: { id: user.id },
+      });
+      const findArticle = await this.dataBase.article.findUnique({
+        where: {
+          id,
+        },
+      });
+      if (!findArticle || !findUser)
+        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+      return this.dataBase.article.delete({
+        where: {
+          id,
+        },
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(FAILED_TO_RETRIEVE_ARTICLE, error);
+    }
   }
 }

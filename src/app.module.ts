@@ -10,6 +10,7 @@ import { DatabaseService } from './database';
 import { TokenModule, TokenService } from './token';
 import { JwtService } from '@nestjs/jwt';
 import { AdminModule } from './admin';
+import { AdminCheckModule, AdminCheckService } from './admin-check';
 
 @Module({
   controllers: [AppController, ArticlesController],
@@ -18,8 +19,9 @@ import { AdminModule } from './admin';
     ArticlesService,
     DatabaseService,
     TokenService,
+    AdminCheckService,
     JwtService,
   ],
-  imports: [ArticlesModule, TokenModule, AdminModule],
+  imports: [ArticlesModule, TokenModule, AdminModule, AdminCheckModule],
 })
 export class AppModule {}
