@@ -1,1 +1,1 @@
-export * from './setHeader';
+export * from './setHead';

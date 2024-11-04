@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { AddArticle, EditDto } from './dto';
-// TODO: убрать admin и обертнуть куками admin
 @Controller('articles')
 export class ArticlesController {
   constructor(private readonly articleService: ArticlesService) {}
