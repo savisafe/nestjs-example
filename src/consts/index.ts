@@ -8,3 +8,4 @@ export const FALED_TO_EXIT = 'Не удалось выйти!';
 export const SUCEES_TO_EXIT = 'Вы успешно вышли!';
 export const FAILED_TO_ADMIN_DATA = 'Не удалось получить Ваши данные!';
 export const YOU_DONT_OPPORTUNITY = 'У Вас нет возможности!';
+export const FAILED_TO_CATEGORIES = 'Не удалось получить категории!';

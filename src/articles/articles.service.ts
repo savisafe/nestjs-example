@@ -47,7 +47,7 @@ export class ArticlesService {
       }
       if (articles.length === 0)
         return { message: NO_ARTICLES_FOUND, statusCode: HttpStatus.OK };
-      return articles;
+      return { articles, statusCode: HttpStatus.OK };
     } catch (error) {
       throw new InternalServerErrorException(
         FAILED_TO_RETRIEVE_ARTICLES,
@@ -64,7 +64,7 @@ export class ArticlesService {
     });
     if (articles.length === 0)
       throw new HttpException(NO_ARTICLES_FOUND, HttpStatus.BAD_REQUEST);
-    return articles;
+    return { articles, statusCode: HttpStatus.OK };
   }
   async findArticle(id) {
     const article = await this.dataBase.article.findFirst({
@@ -74,7 +74,7 @@ export class ArticlesService {
     });
     if (!article)
       throw new HttpException(NO_ARTICLE_FOUND, HttpStatus.BAD_REQUEST);
-    return article;
+    return { article, statusCode: HttpStatus.OK };
   }
   async addArticle(data, response, request) {
     setHead(response);
@@ -99,7 +99,7 @@ export class ArticlesService {
         },
       });
       if (!createArticle || !findUser) return YOU_DONT_OPPORTUNITY;
-      return createArticle;
+      return { article: createArticle, statusCode: HttpStatus.OK };
     } catch (error) {
       throw new InternalServerErrorException(FAILED_TO_CREATE_ARTICLE, error);
     }
@@ -110,7 +110,11 @@ export class ArticlesService {
       data;
     try {
       const token = request.cookies.token;
-      if (!token) return YOU_DONT_OPPORTUNITY;
+      if (!token)
+        return {
+          message: YOU_DONT_OPPORTUNITY,
+          statusCode: HttpStatus.BAD_REQUEST,
+        };
       const user = await this.tokenService.verifyToken(token);
       const findUser = await this.dataBase.admin.findUnique({
         where: { id: user.id },
@@ -120,8 +124,12 @@ export class ArticlesService {
           id: data.id,
         },
       });
-      if (!findArticle || !findUser) return NO_ARTICLE_FOUND;
-      return this.dataBase.article.update({
+      if (!findArticle || !findUser)
+        return {
+          message: NO_ARTICLE_FOUND,
+          statusCode: HttpStatus.BAD_REQUEST,
+        };
+      const article = await this.dataBase.article.update({
         where: {
           id,
         },
@@ -135,6 +143,10 @@ export class ArticlesService {
           draft,
         },
       });
+      return {
+        article,
+        statusCode: HttpStatus.OK,
+      };
     } catch (error) {
       throw new InternalServerErrorException(FAILED_TO_RETRIEVE_ARTICLE, error);
     }
@@ -157,11 +169,15 @@ export class ArticlesService {
       });
       if (!findArticle || !findUser)
         throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
-      return this.dataBase.article.delete({
+      const article = await this.dataBase.article.delete({
         where: {
           id,
         },
       });
+      return {
+        article,
+        statusCode: HttpStatus.OK,
+      };
     } catch (error) {
       throw new InternalServerErrorException(FAILED_TO_RETRIEVE_ARTICLE, error);
     }
