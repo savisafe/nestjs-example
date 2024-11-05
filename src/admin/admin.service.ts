@@ -3,6 +3,7 @@ import { DatabaseService } from '../database';
 import {
   FAILED_TO_ADMIN_DATA,
   FAILED_TO_LOGIN,
+  FALED_TO_EXIT,
   SUCEES_TO_EXIT,
 } from '../consts';
 import { TokenService } from '../token';
@@ -73,7 +74,7 @@ export class AdminService {
       response.cookie('token', '');
       return { message: SUCEES_TO_EXIT, statusCode: HttpStatus.OK };
     } catch (error) {
-      throw new HttpException(FAILED_TO_LOGIN, HttpStatus.BAD_REQUEST);
+      throw new HttpException(FALED_TO_EXIT, HttpStatus.BAD_REQUEST);
     }
   }
 }
