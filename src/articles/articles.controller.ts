@@ -18,8 +18,8 @@ export class ArticlesController {
   constructor(private readonly articleService: ArticlesService) {}
   @Get()
   @HttpCode(HttpStatus.OK)
-  async get_articles(@Res({ passthrough: true }) response) {
-    return this.articleService.getArticles(response);
+  async get_articles(@Res({ passthrough: true }) response, @Req() request) {
+    return this.articleService.getArticles(response, request);
   }
   @Get('category/:category')
   @HttpCode(HttpStatus.OK)

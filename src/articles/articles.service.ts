@@ -22,10 +22,32 @@ export class ArticlesService {
     private readonly dataBase: DatabaseService,
     private readonly tokenService: TokenService,
   ) {}
-  async getArticles(response) {
+  async getArticles(response, request) {
+    setHead(response);
     try {
-      setHead(response);
-      return this.dataBase.article.findMany({});
+      let articles;
+      const token = request.cookies.token;
+      if (!token) {
+        articles = await this.dataBase.article.findMany({
+          where: {
+            draft: false,
+          },
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            date: true,
+            category: true,
+            author: true,
+            language: true,
+          },
+        });
+      } else {
+        articles = await this.dataBase.article.findMany({});
+      }
+      if (articles.length === 0)
+        return { message: NO_ARTICLES_FOUND, statusCode: HttpStatus.OK };
+      return articles;
     } catch (error) {
       throw new InternalServerErrorException(
         FAILED_TO_RETRIEVE_ARTICLES,
