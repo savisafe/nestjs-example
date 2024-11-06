@@ -15,6 +15,7 @@ import {
 } from '../consts';
 import { TokenService } from '../token';
 import { setHead } from '../functions';
+import slugify from 'slugify';
 
 @Injectable()
 export class ArticlesService {
@@ -176,9 +177,14 @@ export class ArticlesService {
       if (!findUser || !user) {
         throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
       }
+      const slug = slugify(title, {
+        lower: true,
+        strict: true,
+      });
       const createArticle = await this.dataBase.article.create({
         data: {
           title,
+          slug: slug,
           description,
           date: new Date(),
           author,
