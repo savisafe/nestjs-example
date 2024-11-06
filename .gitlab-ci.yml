@@ -1,0 +1,20 @@
+include:
+  - project: "whoer/cicd-templates"
+    ref: master
+    file:
+      - "00-default-vars.yml"
+      - "10-lint-templates.yml"
+      - "10-build-templates.yml"
+
+stages:          t of stages for jobs, and their order of execution
+  - build
+  - test
+  - deploy
+  - update_service
+
+Build whox-blog-backend:
+  extends: .build_dockerfile_template
+  variables:
+    CI_REGISTRY_IMAGE: "whox-blog-backend"
+    BUILD_CONTEXT_DIR: "${CI_PROJECT_DIR}"
+    BUILD_DOCKERFILE_PATH: "${CI_PROJECT_DIR}/Dockerfile"
