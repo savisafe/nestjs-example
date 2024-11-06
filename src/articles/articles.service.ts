@@ -92,7 +92,6 @@ export class ArticlesService {
         lower: true,
         strict: true,
       });
-      console.log(slug);
       const createArticle = await this.dataBase.article.create({
         data: {
           title,
