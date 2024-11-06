@@ -14,7 +14,7 @@ stages:
   - update_service
 
 Lint Dockerfile:
-  stage: lint
+  extends: .lint_dockerfile
   variables:
     DOCKERFILE_PATH: "${CI_PROJECT_DIR}/Dockerfile"
 
