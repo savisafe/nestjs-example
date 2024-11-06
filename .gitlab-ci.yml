@@ -17,6 +17,8 @@ Lint Dockerfile:
   extends: .lint_dockerfile
   variables:
     DOCKERFILE_PATH: "${CI_PROJECT_DIR}/Dockerfile"
+  script:
+    - echo "${CI_ENVIRONMENT_SLUG}-${CI_COMMIT_TAG}"
 
 Build whox-blog-backend:
   extends: .build_dockerfile_template
