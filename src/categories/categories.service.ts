@@ -1,10 +1,16 @@
 import {
+  HttpException,
   HttpStatus,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { DatabaseService } from '../database';
-import { FAILED_TO_CATEGORIES } from '../consts';
+import {
+  FAILED_TO_CATEGORIES,
+  FAILED_TO_CREATE_ARTICLE,
+  NO_CATEGORIES,
+  YOU_DONT_OPPORTUNITY,
+} from '../consts';
 import { TokenService } from '../token';
 import { setHead } from '../functions';
 
@@ -26,17 +32,27 @@ export class CategoriesService {
           select: { category: true },
         });
       } else {
+        const adminId = await this.tokenService.verifyToken(token);
+        const findAdmin = await this.dataBase.admin.findUnique({
+          where: {
+            id: adminId.id,
+          },
+        });
         categories = await this.dataBase.article.findMany({
+          where: findAdmin ? undefined : { draft: false },
           select: { category: true },
         });
       }
-      if (categories.length === 0)
-        return { message: FAILED_TO_CATEGORIES, statusCode: HttpStatus.OK };
+      if (!categories || categories.length === 0)
+        throw new HttpException(NO_CATEGORIES, HttpStatus.BAD_REQUEST);
       return {
         categories: [...new Set(categories.map(({ category }) => category))],
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new InternalServerErrorException(FAILED_TO_CATEGORIES, error);
     }
   }

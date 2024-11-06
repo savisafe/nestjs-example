@@ -1,6 +1,8 @@
 export const NO_ARTICLES_FOUND = 'Статьи не найдены!';
 export const NO_ARTICLE_FOUND = 'Статья не найдена!';
 export const FAILED_TO_CREATE_ARTICLE = 'Не удалось создать статью!';
+export const FAILED_TO_CHANGE_ARTICLE = 'Не удалось редактировать статью!';
+export const FAILED_TO_DELETE_ARTICLE = 'Не удалось удалить статью!';
 export const FAILED_TO_RETRIEVE_ARTICLES = 'Не удалось получить статьи!';
 export const FAILED_TO_RETRIEVE_ARTICLE = 'Не удалось получить статью!';
 export const FAILED_TO_LOGIN = 'Не удалось войти!';
@@ -9,3 +11,4 @@ export const SUCEES_TO_EXIT = 'Вы успешно вышли!';
 export const FAILED_TO_ADMIN_DATA = 'Не удалось получить Ваши данные!';
 export const YOU_DONT_OPPORTUNITY = 'У Вас нет возможности!';
 export const FAILED_TO_CATEGORIES = 'Не удалось получить категории!';
+export const NO_CATEGORIES = 'Категории не найдены!';
