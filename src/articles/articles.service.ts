@@ -25,11 +25,94 @@ export class ArticlesService {
   async getArticles(response, request) {
     setHead(response);
     try {
-      let articles;
       const token = request.cookies.token;
+      let articles;
+      if (!token) {
+        articles = await this.dataBase.article.findMany({
+          where: { draft: false },
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            date: true,
+            author: true,
+            category: true,
+            language: true,
+          },
+        });
+      } else {
+        const adminId = await this.tokenService.verifyToken(token);
+        const findAdmin = await this.dataBase.admin.findUnique({
+          where: { id: adminId.id },
+        });
+        articles = await this.dataBase.article.findMany({
+          where: findAdmin ? {} : { draft: false },
+          select: findAdmin
+            ? undefined
+            : {
+                id: true,
+                title: true,
+                description: true,
+                date: true,
+                author: true,
+                category: true,
+                language: true,
+              },
+        });
+      }
+      if (!articles || articles.length === 0) {
+        throw new HttpException(NO_ARTICLES_FOUND, HttpStatus.NOT_FOUND);
+      }
+      return { articles, statusCode: HttpStatus.OK };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        FAILED_TO_RETRIEVE_ARTICLES,
+        error,
+      );
+    }
+  }
+  async getCategoryArticles(category, response, request) {
+    setHead(response);
+    try {
+      const token = request.cookies.token;
+      let articles;
       if (!token) {
         articles = await this.dataBase.article.findMany({
           where: {
+            category,
+            draft: false,
+          },
+        });
+      } else {
+        articles = await this.dataBase.article.findMany({
+          where: { category },
+        });
+      }
+      if (articles.length === 0)
+        throw new HttpException(NO_ARTICLES_FOUND, HttpStatus.BAD_REQUEST);
+      return { articles, statusCode: HttpStatus.OK };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        FAILED_TO_RETRIEVE_ARTICLES,
+        error,
+      );
+    }
+  }
+  async findArticle(id, response, request) {
+    setHead(response);
+    try {
+      const token = request.cookies.token;
+      let article;
+      if (!token) {
+        article = await this.dataBase.article.findUnique({
+          where: {
+            id,
             draft: false,
           },
           select: {
@@ -37,56 +120,62 @@ export class ArticlesService {
             title: true,
             description: true,
             date: true,
-            category: true,
             author: true,
+            category: true,
             language: true,
           },
         });
       } else {
-        articles = await this.dataBase.article.findMany({});
+        const adminId = await this.tokenService.verifyToken(token);
+        const findAdmin = await this.dataBase.admin.findUnique({
+          where: { id: adminId.id },
+        });
+        article = await this.dataBase.article.findUnique({
+          where: findAdmin
+            ? { id }
+            : {
+                id,
+                draft: false,
+              },
+          select: findAdmin
+            ? undefined
+            : {
+                id: true,
+                title: true,
+                description: true,
+                date: true,
+                author: true,
+                category: true,
+                language: true,
+              },
+        });
       }
-      if (articles.length === 0)
-        return { message: NO_ARTICLES_FOUND, statusCode: HttpStatus.OK };
-      return { articles, statusCode: HttpStatus.OK };
+      if (!article || article.length === 0) {
+        throw new HttpException(NO_ARTICLE_FOUND, HttpStatus.NOT_FOUND);
+      }
+      return { article, statusCode: HttpStatus.OK };
     } catch (error) {
-      throw new InternalServerErrorException(
-        FAILED_TO_RETRIEVE_ARTICLES,
-        error,
-      );
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(FAILED_TO_RETRIEVE_ARTICLE, error);
     }
-  }
-  async getCategoryArticles(category) {
-    const articles = await this.dataBase.article.findMany({
-      where: {
-        category,
-        draft: false,
-      },
-    });
-    if (articles.length === 0)
-      throw new HttpException(NO_ARTICLES_FOUND, HttpStatus.BAD_REQUEST);
-    return { articles, statusCode: HttpStatus.OK };
-  }
-  async findArticle(id) {
-    const article = await this.dataBase.article.findFirst({
-      where: {
-        id,
-      },
-    });
-    if (!article)
-      throw new HttpException(NO_ARTICLE_FOUND, HttpStatus.BAD_REQUEST);
-    return { article, statusCode: HttpStatus.OK };
   }
   async addArticle(data, response, request) {
     setHead(response);
     const { title, description, author, category, language } = data;
     const token = request.cookies.token;
-    if (!token)
+    if (!token) {
       throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+    }
     try {
       const user = await this.tokenService.verifyToken(token);
       const findUser = await this.dataBase.admin.findUnique({
         where: { id: user.id },
       });
+      if (!findUser || !user) {
+        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+      }
       const createArticle = await this.dataBase.article.create({
         data: {
           title,
@@ -98,9 +187,14 @@ export class ArticlesService {
           language,
         },
       });
-      if (!createArticle || !findUser) return YOU_DONT_OPPORTUNITY;
+      if (!createArticle) {
+        throw new InternalServerErrorException(FAILED_TO_CREATE_ARTICLE);
+      }
       return { article: createArticle, statusCode: HttpStatus.OK };
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new InternalServerErrorException(FAILED_TO_CREATE_ARTICLE, error);
     }
   }

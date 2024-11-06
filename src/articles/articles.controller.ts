@@ -23,13 +23,21 @@ export class ArticlesController {
   }
   @Get('category/:category')
   @HttpCode(HttpStatus.OK)
-  async get_category_articles(@Param('category') category) {
-    return this.articleService.getCategoryArticles(category);
+  async get_category_articles(
+    @Param('category') category,
+    @Res({ passthrough: true }) response,
+    @Req() request,
+  ) {
+    return this.articleService.getCategoryArticles(category, response, request);
   }
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async find_article(@Param('id') id: string) {
-    return this.articleService.findArticle(id);
+  async find_article(
+    @Param('id') id: string,
+    @Res({ passthrough: true }) response,
+    @Req() request,
+  ) {
+    return this.articleService.findArticle(id, response, request);
   }
   @Put()
   @HttpCode(HttpStatus.OK)

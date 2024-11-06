@@ -9,14 +9,14 @@ datasource db {
 
 model Admin {
   id       String @id @default(uuid())
-  login    String
-  password String
+  login    String @unique()
+  password String @unique()
   name     String
 }
 
 model Article {
   id          String   @id @default(uuid())
-  title       String
+  title       String   @unique()
   description String
   date        DateTime
   author      Author
@@ -38,7 +38,6 @@ enum Author {
 }
 
 enum Language {
-  lang_1
-  lang_2
-  lang_3
+  ru
+  en
 }

@@ -45,14 +45,14 @@ export class AdminService {
     setHead(response);
     const { login, password } = data;
     try {
-      const { id, name } = (await this.dataBase.admin.findFirst({
+      const { id, name } = (await this.dataBase.admin.findUnique({
         where: {
           login,
           password,
         },
         select: {
-          name: true,
           id: true,
+          name: true,
         },
       })) as IAdmin;
       const token = await this.tokenService.generateJwtToken({
