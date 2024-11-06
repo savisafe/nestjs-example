@@ -15,6 +15,7 @@ import {
 } from '../consts';
 import { TokenService } from '../token';
 import { setHead } from '../functions';
+import slugify from 'slugify';
 
 @Injectable()
 export class ArticlesService {
@@ -87,9 +88,15 @@ export class ArticlesService {
       const findUser = await this.dataBase.admin.findUnique({
         where: { id: user.id },
       });
+      const slug = slugify(title, {
+        lower: true,
+        strict: true,
+      });
+      console.log(slug);
       const createArticle = await this.dataBase.article.create({
         data: {
           title,
+          slug: slug,
           description,
           date: new Date(),
           author,
