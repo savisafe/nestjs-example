@@ -32,11 +32,18 @@ export class CategoriesService {
           select: { category: true },
         });
       } else {
+        const adminId = await this.tokenService.verifyToken(token);
+        const findAdmin = await this.dataBase.admin.findUnique({
+          where: {
+            id: adminId.id,
+          },
+        });
         categories = await this.dataBase.article.findMany({
+          where: findAdmin ? undefined : { draft: false },
           select: { category: true },
         });
       }
-      if (categories.length === 0)
+      if (!categories || categories.length === 0)
         throw new HttpException(NO_CATEGORIES, HttpStatus.BAD_REQUEST);
       return {
         categories: [...new Set(categories.map(({ category }) => category))],

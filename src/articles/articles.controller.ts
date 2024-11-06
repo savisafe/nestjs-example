@@ -30,14 +30,14 @@ export class ArticlesController {
   ) {
     return this.articleService.getCategoryArticles(category, response, request);
   }
-  @Get(':id')
+  @Get(':slug')
   @HttpCode(HttpStatus.OK)
   async find_article(
-    @Param('id') id: string,
+    @Param('slug') slug: string,
     @Res({ passthrough: true }) response,
     @Req() request,
   ) {
-    return this.articleService.findArticle(id, response, request);
+    return this.articleService.findArticle(slug, response, request);
   }
   @Put()
   @HttpCode(HttpStatus.OK)

@@ -6,7 +6,9 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from '../database';
 import {
+  FAILED_TO_CHANGE_ARTICLE,
   FAILED_TO_CREATE_ARTICLE,
+  FAILED_TO_DELETE_ARTICLE,
   FAILED_TO_RETRIEVE_ARTICLE,
   FAILED_TO_RETRIEVE_ARTICLES,
   NO_ARTICLE_FOUND,
@@ -34,6 +36,7 @@ export class ArticlesService {
           select: {
             id: true,
             title: true,
+            slug: true,
             description: true,
             date: true,
             author: true,
@@ -53,6 +56,7 @@ export class ArticlesService {
             : {
                 id: true,
                 title: true,
+                slug: true,
                 description: true,
                 date: true,
                 author: true,
@@ -88,8 +92,12 @@ export class ArticlesService {
           },
         });
       } else {
+        const adminId = await this.tokenService.verifyToken(token);
+        const findAdmin = await this.dataBase.admin.findUnique({
+          where: { id: adminId.id },
+        });
         articles = await this.dataBase.article.findMany({
-          where: { category },
+          where: findAdmin ? { category } : { category, draft: false },
         });
       }
       if (articles.length === 0)
@@ -105,7 +113,7 @@ export class ArticlesService {
       );
     }
   }
-  async findArticle(id, response, request) {
+  async findArticle(slug, response, request) {
     setHead(response);
     try {
       const token = request.cookies.token;
@@ -113,12 +121,13 @@ export class ArticlesService {
       if (!token) {
         article = await this.dataBase.article.findUnique({
           where: {
-            id,
+            slug,
             draft: false,
           },
           select: {
             id: true,
             title: true,
+            slug: true,
             description: true,
             date: true,
             author: true,
@@ -133,9 +142,9 @@ export class ArticlesService {
         });
         article = await this.dataBase.article.findUnique({
           where: findAdmin
-            ? { id }
+            ? { slug }
             : {
-                id,
+                slug,
                 draft: false,
               },
           select: findAdmin
@@ -143,6 +152,7 @@ export class ArticlesService {
             : {
                 id: true,
                 title: true,
+                slug: true,
                 description: true,
                 date: true,
                 author: true,
@@ -170,11 +180,11 @@ export class ArticlesService {
       throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
     }
     try {
-      const user = await this.tokenService.verifyToken(token);
-      const findUser = await this.dataBase.admin.findUnique({
-        where: { id: user.id },
+      const adminId = await this.tokenService.verifyToken(token);
+      const findAdmin = await this.dataBase.admin.findUnique({
+        where: { id: adminId.id },
       });
-      if (!findUser || !user) {
+      if (!findAdmin) {
         throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
       }
       const slug = slugify(title, {
@@ -211,24 +221,24 @@ export class ArticlesService {
     try {
       const token = request.cookies.token;
       if (!token)
-        return {
-          message: YOU_DONT_OPPORTUNITY,
-          statusCode: HttpStatus.BAD_REQUEST,
-        };
-      const user = await this.tokenService.verifyToken(token);
-      const findUser = await this.dataBase.admin.findUnique({
-        where: { id: user.id },
+        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+      const adminId = await this.tokenService.verifyToken(token);
+      const findAdmin = await this.dataBase.admin.findUnique({
+        where: { id: adminId.id },
       });
+      if (!findAdmin)
+        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
       const findArticle = await this.dataBase.article.findUnique({
         where: {
           id: data.id,
         },
       });
-      if (!findArticle || !findUser)
-        return {
-          message: NO_ARTICLE_FOUND,
-          statusCode: HttpStatus.BAD_REQUEST,
-        };
+      if (!findArticle)
+        throw new HttpException(NO_ARTICLE_FOUND, HttpStatus.BAD_REQUEST);
+      const slug = slugify(title, {
+        lower: true,
+        strict: true,
+      });
       const article = await this.dataBase.article.update({
         where: {
           id,
@@ -236,6 +246,7 @@ export class ArticlesService {
         data: {
           title,
           description,
+          slug,
           date,
           author,
           category,
@@ -248,27 +259,33 @@ export class ArticlesService {
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
-      throw new InternalServerErrorException(FAILED_TO_RETRIEVE_ARTICLE, error);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(FAILED_TO_CHANGE_ARTICLE, error);
     }
   }
   async deleteArticle(data, response, request) {
     setHead(response);
     const { id } = data;
-    const token = request.cookies.token;
-    if (!token)
-      throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
     try {
-      const user = await this.tokenService.verifyToken(token);
-      const findUser = await this.dataBase.admin.findUnique({
-        where: { id: user.id },
+      const token = request.cookies.token;
+      if (!token)
+        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+      const adminId = await this.tokenService.verifyToken(token);
+      const findAdmin = await this.dataBase.admin.findUnique({
+        where: { id: adminId.id },
       });
+      if (!findAdmin)
+        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
       const findArticle = await this.dataBase.article.findUnique({
         where: {
           id,
         },
       });
-      if (!findArticle || !findUser)
-        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+      if (!findArticle)
+        throw new HttpException(NO_ARTICLE_FOUND, HttpStatus.BAD_REQUEST);
+
       const article = await this.dataBase.article.delete({
         where: {
           id,
@@ -279,7 +296,10 @@ export class ArticlesService {
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
-      throw new InternalServerErrorException(FAILED_TO_RETRIEVE_ARTICLE, error);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(FAILED_TO_DELETE_ARTICLE, error);
     }
   }
 }
