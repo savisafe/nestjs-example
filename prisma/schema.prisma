@@ -16,6 +16,7 @@ model Admin {
 
 model Article {
   id          String   @id @default(uuid())
+  slug        String   @unique()
   title       String
   description String
   date        DateTime
