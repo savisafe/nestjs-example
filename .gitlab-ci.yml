@@ -6,11 +6,17 @@ include:
       - "10-lint-templates.yml"
       - "10-build-templates.yml"
 
-stages:          t of stages for jobs, and their order of execution
+stages:
+  - lint
   - build
   - test
   - deploy
   - update_service
+
+Lint Dockerfile:
+  stage: lint
+  variables:
+    DOCKERFILE_PATH: "${CI_PROJECT_DIR}/Dockerfile"
 
 Build whox-blog-backend:
   extends: .build_dockerfile_template
