@@ -12,4 +12,6 @@ export class AddArticle {
   category: TCategory;
   @IsNotEmpty()
   language: TLanguage;
+  @IsNotEmpty()
+  preview_image: string;
 }

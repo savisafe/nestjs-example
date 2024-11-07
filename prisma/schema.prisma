@@ -15,15 +15,16 @@ model Admin {
 }
 
 model Article {
-  id          String   @id @default(uuid())
-  title       String   @unique()
-  slug        String   @unique()
-  description String
-  date        DateTime
-  author      Author
-  category    Category
-  draft       Boolean
-  language    Language
+  id            String   @id @default(uuid())
+  title         String   @unique()
+  slug          String   @unique()
+  description   String
+  date          DateTime
+  author        Author
+  category      Category
+  draft         Boolean
+  language      Language
+  preview_image String
 }
 
 enum Category {

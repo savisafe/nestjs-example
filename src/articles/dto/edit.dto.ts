@@ -19,4 +19,6 @@ export class EditDto {
   @IsNotEmpty()
   language?: TLanguage;
   draft?: boolean;
+  @IsNotEmpty()
+  preview_image?: string;
 }

@@ -42,6 +42,7 @@ export class ArticlesService {
             author: true,
             category: true,
             language: true,
+            preview_image: true,
           },
         });
       } else {
@@ -62,6 +63,7 @@ export class ArticlesService {
                 author: true,
                 category: true,
                 language: true,
+                preview_image: true,
               },
         });
       }
@@ -89,6 +91,17 @@ export class ArticlesService {
           where: {
             category,
             draft: false,
+          },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            description: true,
+            date: true,
+            author: true,
+            category: true,
+            language: true,
+            preview_image: true,
           },
         });
       } else {
@@ -133,6 +146,7 @@ export class ArticlesService {
             author: true,
             category: true,
             language: true,
+            preview_image: true,
           },
         });
       } else {
@@ -174,23 +188,29 @@ export class ArticlesService {
   }
   async addArticle(data, response, request) {
     setHead(response);
-    const { title, description, author, category, language } = data;
+    const { title, description, author, category, language, preview_image } =
+      data;
     const token = request.cookies.token;
+
     if (!token) {
       throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
     }
+
     try {
       const adminId = await this.tokenService.verifyToken(token);
       const findAdmin = await this.dataBase.admin.findUnique({
         where: { id: adminId.id },
       });
+
       if (!findAdmin) {
         throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
       }
+
       const slug = slugify(title, {
         lower: true,
         strict: true,
       });
+
       const createArticle = await this.dataBase.article.create({
         data: {
           title,
@@ -201,11 +221,14 @@ export class ArticlesService {
           category,
           draft: true,
           language,
+          preview_image: preview_image || '',
         },
       });
+
       if (!createArticle) {
         throw new InternalServerErrorException(FAILED_TO_CREATE_ARTICLE);
       }
+
       return { article: createArticle, statusCode: HttpStatus.OK };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -216,8 +239,17 @@ export class ArticlesService {
   }
   async editArticle(data, response, request) {
     setHead(response);
-    const { id, title, description, date, author, category, draft, language } =
-      data;
+    const {
+      id,
+      title,
+      description,
+      date,
+      author,
+      category,
+      draft,
+      language,
+      preview_image,
+    } = data;
     try {
       const token = request.cookies.token;
       if (!token)
@@ -252,6 +284,7 @@ export class ArticlesService {
           category,
           language,
           draft,
+          preview_image,
         },
       });
       return {

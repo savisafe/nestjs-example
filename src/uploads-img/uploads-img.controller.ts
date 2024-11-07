@@ -1,0 +1,31 @@
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Res,
+} from '@nestjs/common';
+import * as path from 'path';
+import { Response } from 'express';
+import * as fs from 'fs';
+import { NOT_FOUND_IMAGE } from '../consts';
+
+@Controller('uploads')
+export class UploadsImgController {
+  @Get('/:name')
+  @HttpCode(HttpStatus.OK)
+  async getImage(@Param('name') name: string, @Res() response: Response) {
+    const filePath = path.join(process.cwd(), 'uploads', name);
+    console.log(filePath);
+
+    if (!fs.existsSync(filePath)) {
+      return response.status(HttpStatus.NOT_FOUND).json({
+        statusCode: HttpStatus.NOT_FOUND,
+        message: NOT_FOUND_IMAGE,
+      });
+    }
+
+    return response.sendFile(filePath);
+  }
+}

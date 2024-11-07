@@ -12,3 +12,4 @@ export const FAILED_TO_ADMIN_DATA = 'Не удалось получить Ваш
 export const YOU_DONT_OPPORTUNITY = 'У Вас нет возможности!';
 export const FAILED_TO_CATEGORIES = 'Не удалось получить категории!';
 export const NO_CATEGORIES = 'Категории не найдены!';
+export const NOT_FOUND_IMAGE = 'Изображение не найдено!';

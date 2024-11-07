@@ -10,9 +10,13 @@ import {
   Put,
   Req,
   Res,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { AddArticle, EditDto } from './dto';
+import { diskStorage } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
 @Controller('articles')
 export class ArticlesController {
   constructor(private readonly articleService: ArticlesService) {}
@@ -41,21 +45,56 @@ export class ArticlesController {
   }
   @Put()
   @HttpCode(HttpStatus.OK)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          cb(null, `${file.originalname}`);
+        },
+      }),
+    }),
+  )
   async edit_article(
     @Body() dto: EditDto,
+    @UploadedFile() file: Express.Multer.File,
     @Res({ passthrough: true }) response,
     @Req() request,
   ) {
-    return this.articleService.editArticle(dto, response, request);
+    const previewImage = file
+      ? `uploads/${file.originalname}`
+      : dto.preview_image;
+
+    return this.articleService.editArticle(
+      { ...dto, preview_image: previewImage },
+      response,
+      request,
+    );
   }
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          cb(null, `${file.originalname}`);
+        },
+      }),
+    }),
+  )
   async add_article(
     @Body() dto: AddArticle,
+    @UploadedFile() file: Express.Multer.File,
     @Res({ passthrough: true }) response,
     @Req() request,
   ) {
-    return this.articleService.addArticle(dto, response, request);
+    const previewImage = file ? `uploads/${file.originalname}` : null;
+    return this.articleService.addArticle(
+      { ...dto, preview_image: previewImage },
+      response,
+      request,
+    );
   }
   @Delete()
   @HttpCode(HttpStatus.OK)
