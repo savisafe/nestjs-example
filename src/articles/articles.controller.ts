@@ -61,9 +61,10 @@ export class ArticlesController {
     @Res({ passthrough: true }) response,
     @Req() request,
   ) {
-    const previewImage = file
-      ? `uploads/${file.originalname}`
-      : dto.preview_image;
+    let previewImage = dto.preview_image;
+    if (file) {
+      previewImage = `uploads/${file.originalname}`;
+    }
 
     return this.articleService.editArticle(
       { ...dto, preview_image: previewImage },

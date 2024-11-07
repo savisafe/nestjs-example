@@ -9,7 +9,7 @@ export class EditDto {
   @IsNotEmpty()
   title?: string;
   @IsNotEmpty()
-  description: string;
+  description?: string;
   @IsNotEmpty()
   date?: string;
   @IsNotEmpty()
@@ -18,6 +18,7 @@ export class EditDto {
   category?: TCategory;
   @IsNotEmpty()
   language?: TLanguage;
+  @IsNotEmpty()
   draft?: boolean;
   @IsNotEmpty()
   preview_image?: string;

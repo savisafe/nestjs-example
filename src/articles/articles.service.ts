@@ -250,6 +250,7 @@ export class ArticlesService {
       language,
       preview_image,
     } = data;
+
     try {
       const token = request.cookies.token;
       if (!token)
@@ -261,17 +262,15 @@ export class ArticlesService {
       if (!findAdmin)
         throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
       const findArticle = await this.dataBase.article.findUnique({
-        where: {
-          id: data.id,
-        },
+        where: { id },
       });
       if (!findArticle)
         throw new HttpException(NO_ARTICLE_FOUND, HttpStatus.BAD_REQUEST);
-      const slug = slugify(title, {
+      const slug = slugify(title || findArticle.title, {
         lower: true,
         strict: true,
       });
-      const article = await this.dataBase.article.update({
+      const updateData = await this.dataBase.article.update({
         where: {
           id,
         },
@@ -282,16 +281,17 @@ export class ArticlesService {
           date,
           author,
           category,
-          language,
           draft,
+          language,
           preview_image,
         },
       });
       return {
-        article,
+        article: updateData,
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      console.error(FAILED_TO_CHANGE_ARTICLE, error);
       if (error instanceof HttpException) {
         throw error;
       }
