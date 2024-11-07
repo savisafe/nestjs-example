@@ -28,15 +28,17 @@ model Article {
 }
 
 enum Category {
-  test_1
-  test_2
-  test_3
+  How_to
+  Privacy
+  Anonymity
+  WhoX_VPN_news
+  Releases
 }
 
 enum Author {
-  author_1
-  author_2
-  author_3
+  Author_1
+  Author_2
+  Author_3
 }
 
 enum Language {
