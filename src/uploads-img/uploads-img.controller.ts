@@ -17,8 +17,6 @@ export class UploadsImgController {
   @HttpCode(HttpStatus.OK)
   async getImage(@Param('name') name: string, @Res() response: Response) {
     const filePath = path.join(process.cwd(), 'uploads', name);
-    console.log(filePath);
-
     if (!fs.existsSync(filePath)) {
       return response.status(HttpStatus.NOT_FOUND).json({
         statusCode: HttpStatus.NOT_FOUND,

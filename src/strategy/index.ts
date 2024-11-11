@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
 
 interface IUser {
   id: string;
-  name: string;
+  role: string;
   login: string;
   password: string;
 }

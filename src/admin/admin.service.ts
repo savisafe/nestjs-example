@@ -7,7 +7,7 @@ import {
   SUCEES_TO_EXIT,
 } from '../consts';
 import { TokenService } from '../token';
-import { IAdmin } from '../types';
+import { IAdmin, Roles } from '../types';
 import { setHead } from '../functions';
 
 @Injectable()
@@ -23,18 +23,18 @@ export class AdminService {
       throw new HttpException(FAILED_TO_ADMIN_DATA, HttpStatus.BAD_REQUEST);
     const user = await this.tokenService.verifyToken(token);
     try {
-      const { id, name } = await this.dataBase.admin.findUnique({
+      const { id } = await this.dataBase.admin.findUnique({
         where: {
           id: user.id,
         },
         select: {
           id: true,
-          name: true,
+          role: true,
         },
       });
       return {
         id,
-        name,
+        role: Roles.Admin,
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
@@ -45,14 +45,15 @@ export class AdminService {
     setHead(response);
     const { login, password } = data;
     try {
-      const { id, name } = (await this.dataBase.admin.findUnique({
+      const { id } = (await this.dataBase.admin.findUnique({
         where: {
           login,
           password,
         },
         select: {
           id: true,
-          name: true,
+          role: true,
+          token: true,
         },
       })) as IAdmin;
       const token = await this.tokenService.generateJwtToken({ id });
@@ -64,8 +65,8 @@ export class AdminService {
       });
       return {
         id,
-        name,
-        token,
+        role: Roles.Admin,
+        token: token,
         statusCode: HttpStatus.OK,
       };
     } catch (error) {

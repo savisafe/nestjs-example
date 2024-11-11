@@ -11,7 +11,8 @@ model Admin {
   id       String @id @default(uuid())
   login    String @unique()
   password String @unique()
-  name     String
+  role     Roles
+  token    String
 }
 
 model Article {
@@ -44,4 +45,9 @@ enum Author {
 enum Language {
   ru
   en
+}
+
+enum Roles {
+  Admin
+  User
 }
