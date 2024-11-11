@@ -40,7 +40,7 @@ Build whox-blog-backend:
 #  #when: manual
 #  #allow_failure: false    
 
-Deploy Update Service - whoxis_whox-blog-backend-prod :
+Update Service - whox-blog-backend-prod:
   stage: update_service
   image:
     name: curlimages/curl:8.8.0
