@@ -1,8 +1,9 @@
 export interface IAdmin {
   id: string;
   login: string;
+  token: string;
   password: string;
-  name: string;
+  role: string;
 }
 
 export interface IArticle {
@@ -16,4 +17,9 @@ export interface IArticle {
   draft: false;
   language: string;
   preview_image: string;
+}
+
+export enum Roles {
+  Admin = 'Admin',
+  User = 'User',
 }
