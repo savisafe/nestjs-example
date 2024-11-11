@@ -55,13 +55,17 @@ export class AdminService {
           name: true,
         },
       })) as IAdmin;
-      const token = await this.tokenService.generateJwtToken({
-        id,
+      const token = await this.tokenService.generateJwtToken({ id });
+      response.cookie('token', token, {
+        maxAge: 72000000,
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
       });
-      response.cookie('token', token);
       return {
         id,
         name,
+        token,
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
