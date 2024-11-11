@@ -57,6 +57,7 @@ export class AdminService {
         },
       })) as IAdmin;
       const token = await this.tokenService.generateJwtToken({ id });
+      // TODO токен остается сесионным
       response.cookie('token', token, {
         maxAge: 72000000,
         httpOnly: true,
