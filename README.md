@@ -1,7 +1,7 @@
-- Postgres
-- pgAdmin4
-- Prisma
-- NestJS
+#### HOW FIRST LOCAL START
+- Download Postgres
+- download pgAdmin4
+- git clone https://gitlab.d.secwhapi.net/whoer/whox-blog-backend.git
 - yarn install
 - npx prisma (для просмотра команд)
 - npx prisma init
