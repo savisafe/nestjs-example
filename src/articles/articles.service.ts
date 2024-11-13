@@ -63,6 +63,7 @@ export class ArticlesService {
             category: true,
             language: true,
             preview_image: true,
+            draft: true,
           },
         });
       }
