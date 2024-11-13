@@ -28,7 +28,8 @@ export class ArticlesService {
   async getArticles(response, request) {
     setHead(response);
     try {
-      const token = request.cookies.token;
+      const token =
+        request.cookies.token || request.headers.authorization?.split(' ')[1];
       let articles;
       if (!token) {
         articles = await this.dataBase.article.findMany({
@@ -52,24 +53,24 @@ export class ArticlesService {
         });
         articles = await this.dataBase.article.findMany({
           where: findAdmin ? {} : { draft: false },
-          select: findAdmin
-            ? undefined
-            : {
-                id: true,
-                title: true,
-                slug: true,
-                description: true,
-                date: true,
-                author: true,
-                category: true,
-                language: true,
-                preview_image: true,
-              },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            description: true,
+            date: true,
+            author: true,
+            category: true,
+            language: true,
+            preview_image: true,
+          },
         });
       }
+
       if (!articles || articles.length === 0) {
         throw new HttpException(NO_ARTICLES_FOUND, HttpStatus.NOT_FOUND);
       }
+
       return { articles, statusCode: HttpStatus.OK };
     } catch (error) {
       if (error instanceof HttpException) {
