@@ -62,7 +62,7 @@ export class AdminService {
         maxAge: 72000000,
         httpOnly: true,
         secure: true,
-        sameSite: 'lax',
+        sameSite: 'None',
       });
       return {
         id,
