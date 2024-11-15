@@ -1,5 +1,12 @@
+import * as process from 'process';
 export const setHead = (response) => {
-  response.setHeader('Access-Control-Allow-Origin', `http://localhost:3000`);
-  response.setHeader('Access-Control-Allow-Origin', `https://whox.is`);
+  response.setHeader(
+    'Access-Control-Allow-Origin',
+    process.env.CORS_DOMEN_LOCAL,
+  );
+  response.setHeader(
+    'Access-Control-Allow-Origin',
+    process.env.CORS_DOMEN_PROD,
+  );
   response.setHeader('Access-Control-Allow-Credentials', 'true');
 };
