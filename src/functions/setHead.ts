@@ -5,6 +5,6 @@ export const setHead = (response) => {
     'Access-Control-Allow-Origin',
     `${process.env.CORS_DOMEN}`,
   );
-  response.setHeader('Access-Control-Allow-Origin', `*`);
+  response.setHeader('Access-Control-Allow-Origin', `http://localhost:3000`);
   response.setHeader('Access-Control-Allow-Credentials', 'true');
 };
