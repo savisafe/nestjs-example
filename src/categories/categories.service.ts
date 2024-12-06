@@ -18,9 +18,9 @@ export class CategoriesService {
 
   async getCategories(response, request) {
     setHead(response);
+    const token = setToken(request);
     try {
       let categories;
-      const token = setToken(request);
       if (!token) {
         categories = await this.dataBase.article.findMany({
           where: { draft: false },
