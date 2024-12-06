@@ -16,7 +16,7 @@ import {
   YOU_DONT_OPPORTUNITY,
 } from '../consts';
 import { TokenService } from '../token';
-import { setHead } from '../functions';
+import { setHead, setToken } from '../functions';
 import slugify from 'slugify';
 
 @Injectable()
@@ -27,9 +27,8 @@ export class ArticlesService {
   ) {}
   async getArticles(response, request) {
     setHead(response);
+    const token = setToken(request);
     try {
-      const token =
-        request.cookies.token || request.headers.authorization?.split(' ')[1];
       let articles;
       if (!token) {
         articles = await this.dataBase.article.findMany({
@@ -86,7 +85,7 @@ export class ArticlesService {
   async getCategoryArticles(category, response, request) {
     setHead(response);
     try {
-      const token = request.cookies.token;
+      const token = setToken(request);
       let articles;
       if (!token) {
         articles = await this.dataBase.article.findMany({
@@ -130,8 +129,8 @@ export class ArticlesService {
   }
   async findArticle(slug, response, request) {
     setHead(response);
+    const token = setToken(request);
     try {
-      const token = request.cookies.token;
       let article;
       if (!token) {
         article = await this.dataBase.article.findUnique({
@@ -190,9 +189,9 @@ export class ArticlesService {
   }
   async addArticle(data, response, request) {
     setHead(response);
+    const token = setToken(request);
     const { title, description, author, category, language, preview_image } =
       data;
-    const token = request.cookies.token;
 
     if (!token) {
       throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
@@ -241,6 +240,7 @@ export class ArticlesService {
   }
   async editArticle(data, response, request) {
     setHead(response);
+    const token = setToken(request);
     const {
       id,
       title,
@@ -254,7 +254,6 @@ export class ArticlesService {
     } = data;
 
     try {
-      const token = request.cookies.token;
       if (!token)
         throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
       const adminId = await this.tokenService.verifyToken(token);
@@ -302,9 +301,9 @@ export class ArticlesService {
   }
   async deleteArticle(data, response, request) {
     setHead(response);
+    const token = setToken(request);
     const { id } = data;
     try {
-      const token = request.cookies.token;
       if (!token)
         throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
       const adminId = await this.tokenService.verifyToken(token);
