@@ -8,7 +8,7 @@ import {
 } from '../consts';
 import { TokenService } from '../token';
 import { IAdmin, Roles } from '../types';
-import { setHead } from '../functions';
+import { setHead, setToken } from '../functions';
 
 @Injectable()
 export class AdminService {
@@ -18,7 +18,7 @@ export class AdminService {
   ) {}
   async getAdmin(response, request) {
     setHead(response);
-    const token = request.cookies.token;
+    const token = setToken(request);
     if (!token)
       throw new HttpException(FAILED_TO_ADMIN_DATA, HttpStatus.BAD_REQUEST);
     const user = await this.tokenService.verifyToken(token);
@@ -53,17 +53,9 @@ export class AdminService {
         select: {
           id: true,
           role: true,
-          token: true,
         },
       })) as IAdmin;
       const token = await this.tokenService.generateJwtToken({ id });
-      // TODO токен остается сессионным
-      // response.cookie('token', token, {
-      //   maxAge: 72000000,
-      //   httpOnly: true,
-      //   secure: true,
-      //   sameSite: 'None',
-      // });
       return {
         id,
         role: Roles.Admin,

@@ -5,14 +5,9 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { DatabaseService } from '../database';
-import {
-  FAILED_TO_CATEGORIES,
-  FAILED_TO_CREATE_ARTICLE,
-  NO_CATEGORIES,
-  YOU_DONT_OPPORTUNITY,
-} from '../consts';
+import { FAILED_TO_CATEGORIES, NO_CATEGORIES } from '../consts';
 import { TokenService } from '../token';
-import { setHead } from '../functions';
+import { setHead, setToken } from '../functions';
 
 @Injectable()
 export class CategoriesService {
@@ -25,7 +20,7 @@ export class CategoriesService {
     setHead(response);
     try {
       let categories;
-      const token = request.cookies.token;
+      const token = setToken(request);
       if (!token) {
         categories = await this.dataBase.article.findMany({
           where: { draft: false },
