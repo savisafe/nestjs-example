@@ -17,6 +17,7 @@ import { ArticlesService } from './articles.service';
 import { AddArticle, EditDto } from './dto';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { setHead } from '../functions';
 @Controller('articles')
 export class ArticlesController {
   constructor(private readonly articleService: ArticlesService) {}
@@ -100,10 +101,11 @@ export class ArticlesController {
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async delete_article(
-    @Param('id') id,
+    @Param('id') id: string,
     @Res({ passthrough: true }) response,
     @Req() request,
   ) {
+    setHead(response);
     return this.articleService.deleteArticle(id, response, request);
   }
 }
