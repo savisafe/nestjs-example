@@ -5,8 +5,6 @@ import * as process from 'process';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  // Включаем CORS глобально
   app.enableCors({
     origin: [process.env.CORS_DOMEN],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
