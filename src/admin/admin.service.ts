@@ -1,11 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database';
-import {
-  FAILED_TO_ADMIN_DATA,
-  FAILED_TO_LOGIN,
-  FALED_TO_EXIT,
-  SUCEES_TO_EXIT,
-} from '../consts';
+import { FAILED_TO_ADMIN_DATA, FAILED_TO_LOGIN } from '../consts';
 import { TokenService } from '../token';
 import { IAdmin, Roles } from '../types';
 import { setHead, setToken } from '../functions';
@@ -64,15 +59,6 @@ export class AdminService {
       };
     } catch (error) {
       throw new HttpException(FAILED_TO_LOGIN, HttpStatus.BAD_REQUEST);
-    }
-  }
-  async exitAdmin(response) {
-    try {
-      setHead(response);
-      response.cookie('token', '');
-      return { message: SUCEES_TO_EXIT, statusCode: HttpStatus.OK };
-    } catch (error) {
-      throw new HttpException(FALED_TO_EXIT, HttpStatus.BAD_REQUEST);
     }
   }
 }
