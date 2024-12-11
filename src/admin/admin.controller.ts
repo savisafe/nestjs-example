@@ -28,9 +28,4 @@ export class AdminController {
   ) {
     return this.loginService.loginAdmin(dto, response);
   }
-  @Get('exit')
-  @HttpCode(HttpStatus.OK)
-  async exit_admin(@Res({ passthrough: true }) response) {
-    return this.loginService.exitAdmin(response);
-  }
 }
