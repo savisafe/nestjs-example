@@ -19,6 +19,9 @@ import { AddArticle, EditDto } from './dto';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { setHead } from '../functions';
+import * as process from 'process';
+import { Request, Response } from 'express';
+
 @Controller('articles')
 export class ArticlesController {
   constructor(private readonly articleService: ArticlesService) {}
@@ -99,20 +102,30 @@ export class ArticlesController {
       request,
     );
   }
-  @Options(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  handleOptions(@Res() response) {
-    setHead(response);
-    response.status(HttpStatus.NO_CONTENT).send();
-  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  async delete_article(
+  async deleteArticle(
     @Param('id') id: string,
-    @Res({ passthrough: true }) response,
-    @Req() request,
+    @Res({ passthrough: true }) response: Response,
+    @Req() request: Request,
   ) {
     setHead(response);
     return this.articleService.deleteArticle(id, response, request);
+  }
+
+  @Options('/*')
+  options(@Req() req: Request, @Res() res: Response) {
+    res.setHeader('Access-Control-Allow-Origin', process.env.CORS_DOMEN || '*');
+    res.setHeader(
+      'Access-Control-Allow-Methods',
+      'GET, POST, PUT, DELETE, OPTIONS',
+    );
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Authorization, Content-Type, Accept',
+    );
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.status(204).send();
   }
 }
