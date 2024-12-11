@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Options,
   Param,
   Post,
   Put,
@@ -97,6 +98,12 @@ export class ArticlesController {
       response,
       request,
     );
+  }
+  @Options(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  handleOptions(@Res() response) {
+    setHead(response);
+    response.status(HttpStatus.NO_CONTENT).send();
   }
   @Delete(':id')
   @HttpCode(HttpStatus.OK)

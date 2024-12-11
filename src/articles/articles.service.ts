@@ -303,32 +303,38 @@ export class ArticlesService {
     setHead(response);
     const token = setToken(request);
     try {
-      if (!token)
+      if (!token) {
+        setHead(response);
         throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+      }
+
       const adminId = await this.tokenService.verifyToken(token);
       const findAdmin = await this.dataBase.admin.findUnique({
         where: { id: adminId.id },
       });
-      if (!findAdmin)
+      if (!findAdmin) {
+        setHead(response);
         throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+      }
+
       const findArticle = await this.dataBase.article.findUnique({
-        where: {
-          id,
-        },
+        where: { id },
       });
-      if (!findArticle)
+      if (!findArticle) {
+        setHead(response);
         throw new HttpException(NO_ARTICLE_FOUND, HttpStatus.BAD_REQUEST);
+      }
 
       const article = await this.dataBase.article.delete({
-        where: {
-          id,
-        },
+        where: { id },
       });
+
       return {
         article,
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      setHead(response);
       if (error instanceof HttpException) {
         throw error;
       }
