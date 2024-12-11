@@ -97,13 +97,13 @@ export class ArticlesController {
       request,
     );
   }
-  @Delete()
+  @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async delete_article(
-    @Body() data: { id: string },
+    @Param('id') id,
     @Res({ passthrough: true }) response,
     @Req() request,
   ) {
-    return this.articleService.deleteArticle(data, response, request);
+    return this.articleService.deleteArticle(id, response, request);
   }
 }

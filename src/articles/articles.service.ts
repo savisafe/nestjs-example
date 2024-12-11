@@ -299,10 +299,9 @@ export class ArticlesService {
       throw new InternalServerErrorException(FAILED_TO_CHANGE_ARTICLE, error);
     }
   }
-  async deleteArticle(data, response, request) {
+  async deleteArticle(id, response, request) {
     setHead(response);
     const token = setToken(request);
-    const { id } = data;
     try {
       if (!token)
         throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
