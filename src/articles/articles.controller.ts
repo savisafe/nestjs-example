@@ -116,7 +116,12 @@ export class ArticlesController {
 
   @Options('/*')
   options(@Req() req: Request, @Res() res: Response) {
-    res.setHeader('Access-Control-Allow-Origin', process.env.CORS_DOMEN || '*');
+    res.setHeader(
+      'Access-Control-Allow-Origin',
+      process.env.NODE_ENV === 'production'
+        ? 'https://whox.is'
+        : 'http://localhost:3000',
+    );
     res.setHeader(
       'Access-Control-Allow-Methods',
       'GET, POST, PUT, DELETE, OPTIONS',
