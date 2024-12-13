@@ -5,7 +5,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Options,
   Param,
   Post,
   Put,
@@ -18,18 +17,18 @@ import { ArticlesService } from './articles.service';
 import { AddArticle, EditDto } from './dto';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { setHead } from '../functions';
-import * as process from 'process';
 import { Request, Response } from 'express';
 
 @Controller('articles')
 export class ArticlesController {
   constructor(private readonly articleService: ArticlesService) {}
+  // Админу
   @Get()
   @HttpCode(HttpStatus.OK)
   async get_articles(@Res({ passthrough: true }) response, @Req() request) {
     return this.articleService.getArticles(response, request);
   }
+  // На получение статьи по категории
   @Get('category/:category')
   @HttpCode(HttpStatus.OK)
   async get_category_articles(
@@ -39,6 +38,7 @@ export class ArticlesController {
   ) {
     return this.articleService.getCategoryArticles(category, response, request);
   }
+  // На получение статьи по slug
   @Get(':slug')
   @HttpCode(HttpStatus.OK)
   async find_article(
@@ -48,6 +48,7 @@ export class ArticlesController {
   ) {
     return this.articleService.findArticle(slug, response, request);
   }
+  // На изменение статьи
   @Put()
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(
@@ -77,6 +78,7 @@ export class ArticlesController {
       request,
     );
   }
+  // На создание статьи
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
@@ -102,7 +104,7 @@ export class ArticlesController {
       request,
     );
   }
-
+  // На удаление статьи по id
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async deleteArticle(
@@ -110,22 +112,6 @@ export class ArticlesController {
     @Res({ passthrough: true }) response: Response,
     @Req() request: Request,
   ) {
-    setHead(response);
     return this.articleService.deleteArticle(id, response, request);
-  }
-
-  @Options('/*')
-  options(@Req() req: Request, @Res() res: Response) {
-    res.setHeader('Access-Control-Allow-Origin', process.env.CORS_DOMEN || '*');
-    res.setHeader(
-      'Access-Control-Allow-Methods',
-      'GET, POST, PUT, DELETE, OPTIONS',
-    );
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'Authorization, Content-Type, Accept',
-    );
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.status(204).send();
   }
 }

@@ -12,14 +12,18 @@ import { JwtService } from '@nestjs/jwt';
 import { AdminModule } from './admin';
 import { CategoriesModule } from './categories';
 import { UploadsImgModule } from './uploads-img';
+import { LanguageController } from './language/language.controller';
+import { LanguageModule } from './language/language.module';
+import { LanguageService } from './language/language.service';
 
 @Module({
-  controllers: [AppController, ArticlesController],
+  controllers: [AppController, ArticlesController, LanguageController],
   providers: [
     AppService,
     ArticlesService,
     DatabaseService,
     TokenService,
+    LanguageService,
     JwtService,
   ],
   imports: [
@@ -28,6 +32,7 @@ import { UploadsImgModule } from './uploads-img';
     AdminModule,
     CategoriesModule,
     UploadsImgModule,
+    LanguageModule,
   ],
 })
 export class AppModule {}

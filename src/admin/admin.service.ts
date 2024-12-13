@@ -2,8 +2,8 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database';
 import { FAILED_TO_ADMIN_DATA, FAILED_TO_LOGIN } from '../consts';
 import { TokenService } from '../token';
-import { IAdmin, Roles } from '../types';
 import { setHead, setToken } from '../functions';
+import { Roles } from '../types';
 
 @Injectable()
 export class AdminService {
@@ -15,7 +15,7 @@ export class AdminService {
     setHead(response);
     const token = setToken(request);
     if (!token)
-      throw new HttpException(FAILED_TO_ADMIN_DATA, HttpStatus.BAD_REQUEST);
+      throw new HttpException(FAILED_TO_ADMIN_DATA, HttpStatus.UNAUTHORIZED);
     const user = await this.tokenService.verifyToken(token);
     try {
       const { id } = await this.dataBase.admin.findUnique({
@@ -40,7 +40,7 @@ export class AdminService {
     setHead(response);
     const { login, password } = data;
     try {
-      const { id } = (await this.dataBase.admin.findUnique({
+      const { id } = await this.dataBase.admin.findUnique({
         where: {
           login,
           password,
@@ -49,7 +49,7 @@ export class AdminService {
           id: true,
           role: true,
         },
-      })) as IAdmin;
+      });
       const token = await this.tokenService.generateJwtToken({ id });
       return {
         id,
