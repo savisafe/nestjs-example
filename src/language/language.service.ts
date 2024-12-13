@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from '../database';
 import { setHead } from '../functions';
-import { CategoryList, LanguageEnum } from '../types';
+import { LanguageEnum } from '../types';
 import { Response } from 'express';
 import { FAILED_TO_RETRIEVE_ARTICLES } from '../consts';
 import { Prisma } from '@prisma/client';
