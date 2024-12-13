@@ -38,7 +38,7 @@ export class LanguageService {
       };
       const freshArticle =
         await this.dataBase.article.findFirst(freshArticleArgs);
-      const categories: CategoryList[] = await this.getCategories(language);
+      const categories = await this.getCategories(language);
       const categoryArticles = await this.getArticlesByCategory(
         categories,
         language,
@@ -63,10 +63,7 @@ export class LanguageService {
     return [...new Set(articles.map((item) => item.category))];
   }
 
-  private async getArticlesByCategory(
-    categories: CategoryList[],
-    language: LanguageEnum,
-  ) {
+  private async getArticlesByCategory(categories, language: LanguageEnum) {
     return Promise.all(
       categories.map(async (category) => {
         const freshArticleArgs: Prisma.ArticleFindFirstArgs = {

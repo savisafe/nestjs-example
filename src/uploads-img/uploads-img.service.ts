@@ -21,11 +21,7 @@ export class UploadsImgService {
     private readonly tokenService: TokenService,
   ) {}
 
-  async postImg(
-    file: Express.Multer.File,
-    response: Response,
-    request: Request,
-  ) {
+  async postImg(file, response: Response, request: Request) {
     setHead(response);
 
     try {
@@ -68,7 +64,7 @@ export class UploadsImgService {
     }
   }
 
-  private handleError(error: string): never {
+  private handleError(error) {
     if (error instanceof HttpException) {
       throw error;
     }
