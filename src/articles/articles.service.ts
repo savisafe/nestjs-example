@@ -194,7 +194,7 @@ export class ArticlesService {
       data;
 
     if (!token) {
-      throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+      throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
     }
 
     try {
@@ -204,7 +204,7 @@ export class ArticlesService {
       });
 
       if (!findAdmin) {
-        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
       }
 
       const slug = slugify(title, {
@@ -230,7 +230,7 @@ export class ArticlesService {
         throw new InternalServerErrorException(FAILED_TO_CREATE_ARTICLE);
       }
 
-      return { article: createArticle, statusCode: HttpStatus.OK };
+      return { article: createArticle, statusCode: HttpStatus.CREATED };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -255,13 +255,13 @@ export class ArticlesService {
 
     try {
       if (!token)
-        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
       const adminId = await this.tokenService.verifyToken(token);
       const findAdmin = await this.dataBase.admin.findUnique({
         where: { id: adminId.id },
       });
       if (!findAdmin)
-        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
       const findArticle = await this.dataBase.article.findUnique({
         where: { id },
       });
@@ -304,37 +304,29 @@ export class ArticlesService {
     const token = setToken(request);
     try {
       if (!token) {
-        setHead(response);
-        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
       }
-
       const adminId = await this.tokenService.verifyToken(token);
       const findAdmin = await this.dataBase.admin.findUnique({
         where: { id: adminId.id },
       });
       if (!findAdmin) {
-        setHead(response);
-        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.BAD_REQUEST);
+        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
       }
-
       const findArticle = await this.dataBase.article.findUnique({
         where: { id },
       });
       if (!findArticle) {
-        setHead(response);
         throw new HttpException(NO_ARTICLE_FOUND, HttpStatus.BAD_REQUEST);
       }
-
       const article = await this.dataBase.article.delete({
         where: { id },
       });
-
       return {
         article,
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
-      setHead(response);
       if (error instanceof HttpException) {
         throw error;
       }

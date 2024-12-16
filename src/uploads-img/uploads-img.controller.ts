@@ -11,7 +11,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import * as path from 'path';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import * as fs from 'fs';
 import { NOT_FOUND_IMAGE } from '../consts';
 import { UploadsImgService } from './uploads-img.service';
@@ -28,7 +28,7 @@ export class UploadsImgController {
     const filePath = path.join(process.cwd(), 'uploads', name);
     if (!fs.existsSync(filePath)) {
       return response.status(HttpStatus.NOT_FOUND).json({
-        statusCode: HttpStatus.NOT_FOUND,
+        statusCode: HttpStatus.NO_CONTENT,
         message: NOT_FOUND_IMAGE,
       });
     }
@@ -50,8 +50,8 @@ export class UploadsImgController {
   )
   async postImg(
     @UploadedFile() file: Express.Multer.File,
-    @Res({ passthrough: true }) response,
-    @Req() request,
+    @Res({ passthrough: true }) response: Response,
+    @Req() request: Request,
   ) {
     const postImg = file ? `uploads/${file.originalname}` : null;
     return this.uploadsImg.postImg(postImg, response, request);
