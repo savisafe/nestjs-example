@@ -238,11 +238,10 @@ export class ArticlesService {
       throw new InternalServerErrorException(FAILED_TO_CREATE_ARTICLE, error);
     }
   }
-  async editArticle(data, response, request) {
+  async editArticle(id, data, response, request) {
     setHead(response);
     const token = setToken(request);
     const {
-      id,
       title,
       description,
       date,
