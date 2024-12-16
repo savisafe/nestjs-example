@@ -31,4 +31,7 @@ describe('CategoriesController', () => {
     categoriesService = moduleRef.get(CategoriesService);
     categoriesController = moduleRef.get(CategoriesController);
   });
+  it('Открытие контроллера', () => {
+    expect(categoriesController).toBeDefined();
+  });
 });

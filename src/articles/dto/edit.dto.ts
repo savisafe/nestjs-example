@@ -3,8 +3,6 @@ import { IsNotEmpty } from 'class-validator';
 
 export class EditDto {
   @IsNotEmpty()
-  id: string;
-  @IsNotEmpty()
   slug?: string;
   @IsNotEmpty()
   title?: string;

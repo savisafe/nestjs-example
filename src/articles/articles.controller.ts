@@ -49,7 +49,7 @@ export class ArticlesController {
     return this.articleService.findArticle(slug, response, request);
   }
   // На изменение статьи
-  @Put()
+  @Put(':id')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(
     FileInterceptor('file', {
@@ -62,6 +62,7 @@ export class ArticlesController {
     }),
   )
   async edit_article(
+    @Param('id') id: string,
     @Body() dto: EditDto,
     @UploadedFile() file: Express.Multer.File,
     @Res({ passthrough: true }) response,
@@ -73,6 +74,7 @@ export class ArticlesController {
     }
 
     return this.articleService.editArticle(
+      id,
       { ...dto, preview_image: previewImage },
       response,
       request,
