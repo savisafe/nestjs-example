@@ -69,7 +69,7 @@ export class LanguageService {
         const freshArticleArgs: Prisma.ArticleFindFirstArgs = {
           where: {
             language,
-            category: 'How_to',
+            category,
           },
           orderBy: { date: 'desc' },
           select: {
