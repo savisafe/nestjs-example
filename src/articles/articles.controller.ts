@@ -83,28 +83,12 @@ export class ArticlesController {
   // На создание статьи
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          cb(null, `${file.originalname}`);
-        },
-      }),
-    }),
-  )
   async add_article(
     @Body() dto: AddArticle,
-    @UploadedFile() file: Express.Multer.File,
     @Res({ passthrough: true }) response,
     @Req() request,
   ) {
-    const previewImage = file ? `uploads/${file.originalname}` : null;
-    return this.articleService.addArticle(
-      { ...dto, preview_image: previewImage },
-      response,
-      request,
-    );
+    return this.articleService.addArticle(dto, response, request);
   }
   // На удаление статьи по id
   @Delete(':id')
