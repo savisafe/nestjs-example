@@ -82,7 +82,7 @@ export class ArticlesService {
       );
     }
   }
-  async getCategoryArticles(category, response, request) {
+  async getCategoryArticles(category, language, response, request) {
     setHead(response);
     try {
       const token = setToken(request);
@@ -91,10 +91,10 @@ export class ArticlesService {
         articles = await this.dataBase.article.findMany({
           where: {
             category,
+            language,
             draft: false,
           },
           select: {
-            id: true,
             title: true,
             slug: true,
             description: true,

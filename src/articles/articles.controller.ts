@@ -29,14 +29,20 @@ export class ArticlesController {
     return this.articleService.getArticles(response, request);
   }
   // На получение статьи по категории
-  @Get('category/:category')
+  @Get('category/:category/:language')
   @HttpCode(HttpStatus.OK)
   async get_category_articles(
     @Param('category') category,
+    @Param('language') language,
     @Res({ passthrough: true }) response,
     @Req() request,
   ) {
-    return this.articleService.getCategoryArticles(category, response, request);
+    return this.articleService.getCategoryArticles(
+      category,
+      language,
+      response,
+      request,
+    );
   }
   // На получение статьи по slug
   @Get(':slug')
