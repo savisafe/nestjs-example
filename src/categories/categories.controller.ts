@@ -4,7 +4,6 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Req,
   Res,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
@@ -17,7 +16,6 @@ export class CategoriesController {
   async get_categories(
     @Param('language') language,
     @Res({ passthrough: true }) response,
-    @Req() request,
   ) {
     return this.categoriesService.getCategories(language, response);
   }
