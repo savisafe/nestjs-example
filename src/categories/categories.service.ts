@@ -5,41 +5,20 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { DatabaseService } from '../database';
-import { FAILED_TO_CATEGORIES, NO_CATEGORIES } from '../consts';
-import { TokenService } from '../token';
-import { setHead, setToken } from '../functions';
+import { FAILED_TO_CATEGORIES } from '../consts';
+import { setHead } from '../functions';
 
 @Injectable()
 export class CategoriesService {
-  constructor(
-    private readonly dataBase: DatabaseService,
-    private readonly tokenService: TokenService,
-  ) {}
+  constructor(private readonly dataBase: DatabaseService) {}
 
-  async getCategories(response, request) {
+  async getCategories(language, response) {
     setHead(response);
-    const token = setToken(request);
     try {
-      let categories;
-      if (!token) {
-        categories = await this.dataBase.article.findMany({
-          where: { draft: false },
-          select: { category: true },
-        });
-      } else {
-        const adminId = await this.tokenService.verifyToken(token);
-        const findAdmin = await this.dataBase.admin.findUnique({
-          where: {
-            id: adminId.id,
-          },
-        });
-        categories = await this.dataBase.article.findMany({
-          where: findAdmin ? undefined : { draft: false },
-          select: { category: true },
-        });
-      }
-      if (!categories || categories.length === 0)
-        throw new HttpException(NO_CATEGORIES, HttpStatus.BAD_REQUEST);
+      const categories = await this.dataBase.article.findMany({
+        where: { draft: false, language },
+        select: { category: true },
+      });
       return {
         categories: [...new Set(categories.map(({ category }) => category))],
         statusCode: HttpStatus.OK,
