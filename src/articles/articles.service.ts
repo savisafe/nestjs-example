@@ -111,7 +111,7 @@ export class ArticlesService {
           where: { id: adminId.id },
         });
         articles = await this.dataBase.article.findMany({
-          where: findAdmin ? { category } : { category, draft: false },
+          where: findAdmin ? { category, language } : { category, language },
         });
       }
       if (articles.length === 0)
