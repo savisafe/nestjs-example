@@ -187,6 +187,78 @@ export class ArticlesService {
       throw new InternalServerErrorException(FAILED_TO_RETRIEVE_ARTICLE, error);
     }
   }
+  async findArticleForTitle(title, response, request) {
+    setHead(response);
+    const token = setToken(request);
+    try {
+      let article;
+      if (!token) {
+        article = await this.dataBase.article.findMany({
+          where: {
+            title: {
+              contains: title,
+              mode: 'insensitive',
+            },
+            draft: false,
+          },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            description: true,
+            date: true,
+            author: true,
+            category: true,
+            language: true,
+            preview_image: true,
+          },
+        });
+      } else {
+        const adminId = await this.tokenService.verifyToken(token);
+        const findAdmin = await this.dataBase.admin.findUnique({
+          where: { id: adminId.id },
+        });
+        article = await this.dataBase.article.findMany({
+          where: findAdmin
+            ? {
+                title: {
+                  contains: title,
+                  mode: 'insensitive',
+                },
+              }
+            : {
+                title: {
+                  contains: title,
+                  mode: 'insensitive',
+                },
+                draft: false,
+              },
+          select: findAdmin
+            ? undefined
+            : {
+                id: true,
+                title: true,
+                slug: true,
+                description: true,
+                date: true,
+                author: true,
+                category: true,
+                language: true,
+              },
+        });
+      }
+      if (!article || article.length === 0) {
+        throw new HttpException(NO_ARTICLE_FOUND, HttpStatus.NOT_FOUND);
+      }
+      return { article, statusCode: HttpStatus.OK };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(FAILED_TO_RETRIEVE_ARTICLE, error);
+    }
+  }
+
   async addArticle(data, response, request) {
     setHead(response);
     const token = setToken(request);
