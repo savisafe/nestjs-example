@@ -54,6 +54,18 @@ export class ArticlesController {
   ) {
     return this.articleService.findArticle(slug, response, request);
   }
+
+  // На получение статьи по поиску
+  @Get('/search/:title')
+  @HttpCode(HttpStatus.OK)
+  async find_article_for_title(
+    @Param('title') title: string,
+    @Res({ passthrough: true }) response,
+    @Req() request,
+  ) {
+    return this.articleService.findArticleForTitle(title, response, request);
+  }
+
   // На изменение статьи
   @Put(':id')
   @HttpCode(HttpStatus.OK)
