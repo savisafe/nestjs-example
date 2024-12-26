@@ -82,42 +82,62 @@ export class ArticlesService {
       );
     }
   }
-  async getCategoryArticles(category, language, response, request) {
+  async getCategoryArticles(
+    category,
+    language,
+    page,
+    pageSize,
+    response,
+    request,
+  ) {
     setHead(response);
+    console.log('Request received:', request.query);
     try {
-      const token = setToken(request);
-      let articles;
-      if (!token) {
-        articles = await this.dataBase.article.findMany({
-          where: {
-            category,
-            language,
-            draft: false,
-          },
-          select: {
-            title: true,
-            slug: true,
-            description: true,
-            date: true,
-            author: true,
-            category: true,
-            language: true,
-            preview_image: true,
-          },
-        });
-      } else {
-        const adminId = await this.tokenService.verifyToken(token);
-        const findAdmin = await this.dataBase.admin.findUnique({
-          where: { id: adminId.id },
-        });
-        articles = await this.dataBase.article.findMany({
-          where: findAdmin ? { category, language } : { category, language },
-        });
+      console.log('Category:', category);
+      console.log('Language:', language);
+      console.log('Page:', page);
+      console.log('PageSize:', pageSize);
+      if (!category || !language || !page || !pageSize) {
+        throw new HttpException(
+          'Missing required parameters',
+          HttpStatus.BAD_REQUEST,
+        );
       }
-      if (articles.length === 0)
+      const skip = (page - 1) * pageSize;
+      console.log('Finding articles with:', {
+        category,
+        language,
+        page,
+        pageSize,
+      });
+
+      const articles = await this.dataBase.article.findMany({
+        where: {
+          category,
+          language,
+          draft: false,
+        },
+        skip,
+        take: pageSize,
+      });
+
+      console.log('Found articles:', articles);
+
+      const totalArticles = await this.dataBase.article.count({
+        where: { category, language, draft: false },
+      });
+
+      if (articles.length === 0) {
         throw new HttpException(NO_ARTICLES_FOUND, HttpStatus.BAD_REQUEST);
-      return { articles, statusCode: HttpStatus.OK };
+      }
+
+      return {
+        articles,
+        total: totalArticles,
+        statusCode: HttpStatus.OK,
+      };
     } catch (error) {
+      console.error('Error fetching articles:', error);
       if (error instanceof HttpException) {
         throw error;
       }
