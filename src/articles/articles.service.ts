@@ -82,41 +82,39 @@ export class ArticlesService {
       );
     }
   }
-  async getCategoryArticles(category, language, response, request) {
+  async getCategoryArticles(category, language, page, pageSize, response) {
     setHead(response);
     try {
-      const token = setToken(request);
-      let articles;
-      if (!token) {
-        articles = await this.dataBase.article.findMany({
-          where: {
-            category,
-            language,
-            draft: false,
-          },
-          select: {
-            title: true,
-            slug: true,
-            description: true,
-            date: true,
-            author: true,
-            category: true,
-            language: true,
-            preview_image: true,
-          },
-        });
-      } else {
-        const adminId = await this.tokenService.verifyToken(token);
-        const findAdmin = await this.dataBase.admin.findUnique({
-          where: { id: adminId.id },
-        });
-        articles = await this.dataBase.article.findMany({
-          where: findAdmin ? { category, language } : { category, language },
-        });
+      if (!category || !language) {
+        throw new HttpException(
+          'Missing required parameters',
+          HttpStatus.BAD_REQUEST,
+        );
       }
-      if (articles.length === 0)
+      const take = Number(pageSize);
+      const skip = (page - 1) * take;
+      const articles = await this.dataBase.article.findMany({
+        where: {
+          category,
+          language,
+          draft: false,
+        },
+        skip,
+        take,
+      });
+      const totalArticles = await this.dataBase.article.count({
+        where: { category, language, draft: false },
+      });
+
+      if (articles.length === 0) {
         throw new HttpException(NO_ARTICLES_FOUND, HttpStatus.BAD_REQUEST);
-      return { articles, statusCode: HttpStatus.OK };
+      }
+
+      return {
+        articles,
+        total: totalArticles,
+        statusCode: HttpStatus.OK,
+      };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
