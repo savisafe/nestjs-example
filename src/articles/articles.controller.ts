@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   Res,
   UploadedFile,
@@ -29,15 +30,14 @@ export class ArticlesController {
     return this.articleService.getArticles(response, request);
   }
   // На получение статьи по категории
-  @Get('category/:category/:language/:page/:pageSize')
+  @Get('category/:category')
   @HttpCode(HttpStatus.OK)
   async get_category_articles(
     @Param('category') category,
-    @Param('language') language,
-    @Param('page') page,
-    @Param('pageSize') pageSize,
+    @Query('language') language,
+    @Query('page') page,
+    @Query('pageSize') pageSize,
     @Res({ passthrough: true }) response,
-    @Req() request,
   ) {
     return this.articleService.getCategoryArticles(
       category,
@@ -45,7 +45,6 @@ export class ArticlesController {
       page,
       pageSize,
       response,
-      request,
     );
   }
   // На получение статьи по slug

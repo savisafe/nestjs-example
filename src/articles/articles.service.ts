@@ -82,35 +82,17 @@ export class ArticlesService {
       );
     }
   }
-  async getCategoryArticles(
-    category,
-    language,
-    page,
-    pageSize,
-    response,
-    request,
-  ) {
+  async getCategoryArticles(category, language, page, pageSize, response) {
     setHead(response);
-    console.log('Request received:', request.query);
     try {
-      console.log('Category:', category);
-      console.log('Language:', language);
-      console.log('Page:', page);
-      console.log('PageSize:', pageSize);
-      if (!category || !language || !page || !pageSize) {
+      if (!category || !language) {
         throw new HttpException(
           'Missing required parameters',
           HttpStatus.BAD_REQUEST,
         );
       }
-      const skip = (page - 1) * pageSize;
-      console.log('Finding articles with:', {
-        category,
-        language,
-        page,
-        pageSize,
-      });
-
+      const take = Number(pageSize);
+      const skip = (page - 1) * take;
       const articles = await this.dataBase.article.findMany({
         where: {
           category,
@@ -118,11 +100,8 @@ export class ArticlesService {
           draft: false,
         },
         skip,
-        take: pageSize,
+        take,
       });
-
-      console.log('Found articles:', articles);
-
       const totalArticles = await this.dataBase.article.count({
         where: { category, language, draft: false },
       });
@@ -137,7 +116,6 @@ export class ArticlesService {
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
-      console.error('Error fetching articles:', error);
       if (error instanceof HttpException) {
         throw error;
       }
