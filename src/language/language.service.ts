@@ -71,6 +71,7 @@ export class LanguageService {
             language,
             category,
           },
+          take: 3,
           orderBy: { date: 'desc' },
           select: {
             title: true,
