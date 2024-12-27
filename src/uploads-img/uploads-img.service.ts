@@ -24,6 +24,8 @@ export class UploadsImgService {
   async postImg(file, response: Response, request: Request) {
     setHead(response);
 
+    console.log('test');
+
     try {
       const token = this.getTokenFromRequest(request);
       const adminId = await this.verifyAdminToken(token);
