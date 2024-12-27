@@ -31,7 +31,6 @@ enum Category {
   How_to
   Privacy
   Anonymity
-  Whox_VPN_News
   Releases
 }
 
