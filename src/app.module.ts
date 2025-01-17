@@ -15,7 +15,6 @@ import { UploadsImgModule } from './uploads-img';
 import { LanguageController } from './language/language.controller';
 import { LanguageModule } from './language/language.module';
 import { LanguageService } from './language/language.service';
-import { ExampleModule } from './example/example.module';
 
 @Module({
   controllers: [AppController, ArticlesController, LanguageController],
@@ -34,7 +33,6 @@ import { ExampleModule } from './example/example.module';
     CategoriesModule,
     UploadsImgModule,
     LanguageModule,
-    ExampleModule,
   ],
 })
 export class AppModule {}

@@ -4,7 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { setHead, setToken } from '../functions';
+import { setToken } from '../functions';
 import {
   NOT_ADD_IMAGE,
   SUCCESS_ADD_IMAGE,
@@ -12,7 +12,7 @@ import {
 } from '../consts';
 import { DatabaseService } from '../database';
 import { TokenService } from '../token';
-import { Response, Request } from 'express';
+import { Request } from 'express';
 
 @Injectable()
 export class UploadsImgService {
@@ -21,9 +21,7 @@ export class UploadsImgService {
     private readonly tokenService: TokenService,
   ) {}
 
-  async postImg(file, response: Response, request: Request) {
-    setHead(response);
-
+  async postImg(file, request: Request) {
     try {
       const token = this.getTokenFromRequest(request);
       const adminId = await this.verifyAdminToken(token);

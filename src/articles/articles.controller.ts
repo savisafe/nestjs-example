@@ -26,8 +26,8 @@ export class ArticlesController {
   // Админу
   @Get()
   @HttpCode(HttpStatus.OK)
-  async get_articles(@Res({ passthrough: true }) response, @Req() request) {
-    return this.articleService.getArticles(response, request);
+  async get_articles(@Req() request) {
+    return this.articleService.getArticles(request);
   }
   // На получение статьи по категории
   @Get('category/:category')
@@ -37,36 +37,26 @@ export class ArticlesController {
     @Query('language') language,
     @Query('page') page,
     @Query('pageSize') pageSize,
-    @Res({ passthrough: true }) response,
   ) {
     return this.articleService.getCategoryArticles(
       category,
       language,
       page,
       pageSize,
-      response,
     );
   }
   // На получение статьи по slug
   @Get(':slug')
   @HttpCode(HttpStatus.OK)
-  async find_article(
-    @Param('slug') slug: string,
-    @Res({ passthrough: true }) response,
-    @Req() request,
-  ) {
-    return this.articleService.findArticle(slug, response, request);
+  async find_article(@Param('slug') slug: string, @Req() request) {
+    return this.articleService.findArticle(slug, request);
   }
 
   // На получение статьи по поиску
   @Get('/search/:title')
   @HttpCode(HttpStatus.OK)
-  async find_article_for_title(
-    @Param('title') title: string,
-    @Res({ passthrough: true }) response,
-    @Req() request,
-  ) {
-    return this.articleService.findArticleForTitle(title, response, request);
+  async find_article_for_title(@Param('title') title: string, @Req() request) {
+    return this.articleService.findArticleForTitle(title, request);
   }
 
   // На изменение статьи
@@ -86,7 +76,6 @@ export class ArticlesController {
     @Param('id') id: string,
     @Body() dto: EditDto,
     @UploadedFile() file: Express.Multer.File,
-    @Res({ passthrough: true }) response,
     @Req() request,
   ) {
     let previewImage = dto.preview_image;
@@ -97,28 +86,19 @@ export class ArticlesController {
     return this.articleService.editArticle(
       id,
       { ...dto, preview_image: previewImage },
-      response,
       request,
     );
   }
   // На создание статьи
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async add_article(
-    @Body() dto: AddArticle,
-    @Res({ passthrough: true }) response,
-    @Req() request,
-  ) {
-    return this.articleService.addArticle(dto, response, request);
+  async add_article(@Body() dto: AddArticle, @Req() request) {
+    return this.articleService.addArticle(dto, request);
   }
   // На удаление статьи по id
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  async deleteArticle(
-    @Param('id') id: string,
-    @Res({ passthrough: true }) response: Response,
-    @Req() request: Request,
-  ) {
-    return this.articleService.deleteArticle(id, response, request);
+  async deleteArticle(@Param('id') id: string, @Req() request: Request) {
+    return this.articleService.deleteArticle(id, request);
   }
 }

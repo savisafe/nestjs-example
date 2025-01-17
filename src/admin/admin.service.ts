@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database';
 import { FAILED_TO_ADMIN_DATA, FAILED_TO_LOGIN } from '../consts';
 import { TokenService } from '../token';
-import { setHead, setToken } from '../functions';
+import { setToken } from '../functions';
 import { Roles } from '../types';
 
 @Injectable()
@@ -11,8 +11,7 @@ export class AdminService {
     private readonly dataBase: DatabaseService,
     private readonly tokenService: TokenService,
   ) {}
-  async getAdmin(response, request) {
-    setHead(response);
+  async getAdmin(request) {
     const token = setToken(request);
     if (!token)
       throw new HttpException(FAILED_TO_ADMIN_DATA, HttpStatus.UNAUTHORIZED);
@@ -36,8 +35,7 @@ export class AdminService {
       throw new HttpException(FAILED_TO_ADMIN_DATA, HttpStatus.BAD_REQUEST);
     }
   }
-  async loginAdmin(data, response) {
-    setHead(response);
+  async loginAdmin(data) {
     const { login, password } = data;
     try {
       const { id } = await this.dataBase.admin.findUnique({

@@ -50,10 +50,9 @@ export class UploadsImgController {
   )
   async postImg(
     @UploadedFile() file: Express.Multer.File,
-    @Res({ passthrough: true }) response: Response,
     @Req() request: Request,
   ) {
     const postImg = file ? `uploads/${file.originalname}` : null;
-    return this.uploadsImg.postImg(postImg, response, request);
+    return this.uploadsImg.postImg(postImg, request);
   }
 }

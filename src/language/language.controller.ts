@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Res,
-} from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
 import { LanguageService } from './language.service';
 
 @Controller('language')
@@ -14,10 +7,7 @@ export class LanguageController {
 
   @Get(':language')
   @HttpCode(HttpStatus.OK)
-  async get_articles_to_language(
-    @Param('language') language,
-    @Res({ passthrough: true }) response,
-  ) {
-    return this.languageService.getArticleToLanguage(language, response);
+  async get_articles_to_language(@Param('language') language) {
+    return this.languageService.getArticleToLanguage(language);
   }
 }

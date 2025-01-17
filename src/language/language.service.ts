@@ -5,9 +5,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { DatabaseService } from '../database';
-import { setHead } from '../functions';
 import { LanguageEnum } from '../types';
-import { Response } from 'express';
 import { FAILED_TO_RETRIEVE_ARTICLES } from '../consts';
 import { Prisma } from '@prisma/client';
 
@@ -15,9 +13,7 @@ import { Prisma } from '@prisma/client';
 export class LanguageService {
   constructor(private readonly dataBase: DatabaseService) {}
 
-  async getArticleToLanguage(language: LanguageEnum, response: Response) {
-    setHead(response);
-
+  async getArticleToLanguage(language: LanguageEnum) {
     try {
       const freshArticleArgs: Prisma.ArticleFindFirstArgs = {
         where: {

@@ -16,7 +16,7 @@ import {
   YOU_DONT_OPPORTUNITY,
 } from '../consts';
 import { TokenService } from '../token';
-import { setHead, setToken } from '../functions';
+import { setToken } from '../functions';
 import slugify from 'slugify';
 
 @Injectable()
@@ -25,8 +25,7 @@ export class ArticlesService {
     private readonly dataBase: DatabaseService,
     private readonly tokenService: TokenService,
   ) {}
-  async getArticles(response, request) {
-    setHead(response);
+  async getArticles(request) {
     const token = setToken(request);
     try {
       let articles;
@@ -82,8 +81,7 @@ export class ArticlesService {
       );
     }
   }
-  async getCategoryArticles(category, language, page, pageSize, response) {
-    setHead(response);
+  async getCategoryArticles(category, language, page, pageSize) {
     try {
       if (!category || !language) {
         throw new HttpException(
@@ -125,8 +123,7 @@ export class ArticlesService {
       );
     }
   }
-  async findArticle(slug, response, request) {
-    setHead(response);
+  async findArticle(slug, request) {
     const token = setToken(request);
     try {
       let article;
@@ -185,8 +182,7 @@ export class ArticlesService {
       throw new InternalServerErrorException(FAILED_TO_RETRIEVE_ARTICLE, error);
     }
   }
-  async findArticleForTitle(title, response, request) {
-    setHead(response);
+  async findArticleForTitle(title, request) {
     const token = setToken(request);
     try {
       let article;
@@ -257,8 +253,7 @@ export class ArticlesService {
     }
   }
 
-  async addArticle(data, response, request) {
-    setHead(response);
+  async addArticle(data, request) {
     const token = setToken(request);
     const { title, description, author, category, language, preview_image } =
       data;
@@ -308,8 +303,7 @@ export class ArticlesService {
       throw new InternalServerErrorException(FAILED_TO_CREATE_ARTICLE, error);
     }
   }
-  async editArticle(id, data, response, request) {
-    setHead(response);
+  async editArticle(id, data, request) {
     const token = setToken(request);
     const {
       title,
@@ -368,8 +362,7 @@ export class ArticlesService {
       throw new InternalServerErrorException(FAILED_TO_CHANGE_ARTICLE, error);
     }
   }
-  async deleteArticle(id, response, request) {
-    setHead(response);
+  async deleteArticle(id, request) {
     const token = setToken(request);
     try {
       if (!token) {
