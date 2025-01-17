@@ -1,11 +1,21 @@
-import { Controller, Get, UseInterceptors } from '@nestjs/common';
+import { ExampleService } from './example.service';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  UseInterceptors,
+} from '@nestjs/common';
 import { CorsInterceptor } from '../cors.interceptor';
 
 @Controller('example')
 export class ExampleController {
-  @Get()
+  constructor(private readonly exampleService: ExampleService) {}
+  @Get(':language')
+  @HttpCode(HttpStatus.OK)
   @UseInterceptors(CorsInterceptor)
-  getExample() {
-    return 'cors example';
+  async getExample(@Param('language') language) {
+    return this.exampleService.getExample(language);
   }
 }
