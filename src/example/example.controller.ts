@@ -5,7 +5,6 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Res,
   UseInterceptors,
 } from '@nestjs/common';
 import { CorsInterceptor } from '../cors.interceptor';
@@ -16,10 +15,7 @@ export class ExampleController {
   @Get(':language')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(CorsInterceptor)
-  async getExample(
-    @Param('language') language,
-    @Res({ passthrough: true }) response,
-  ) {
-    return this.exampleService.getExample(language, response);
+  async getExample(@Param('language') language) {
+    return this.exampleService.getExample(language);
   }
 }

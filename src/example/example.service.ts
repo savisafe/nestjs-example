@@ -6,13 +6,11 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { DatabaseService } from '../database';
-import { setHead } from '../functions';
 
 @Injectable()
 export class ExampleService {
   constructor(private readonly dataBase: DatabaseService) {}
-  async getExample(language, response) {
-    setHead(response);
+  async getExample(language) {
     try {
       const categories = await this.dataBase.article.findMany({
         where: { draft: false, language },
