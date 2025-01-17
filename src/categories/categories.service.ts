@@ -6,14 +6,12 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from '../database';
 import { FAILED_TO_CATEGORIES } from '../consts';
-import { setHead } from '../functions';
 
 @Injectable()
 export class CategoriesService {
   constructor(private readonly dataBase: DatabaseService) {}
 
-  async getCategories(language, response) {
-    setHead(response);
+  async getCategories(language) {
     try {
       const categories = await this.dataBase.article.findMany({
         where: { draft: false, language },
