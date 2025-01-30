@@ -1,18 +1,18 @@
 import {
   HttpException,
-  HttpStatus,
   Injectable,
   InternalServerErrorException,
+  HttpStatus,
 } from '@nestjs/common';
-import { setToken } from '../functions';
-import {
-  NOT_ADD_IMAGE,
-  SUCCESS_ADD_IMAGE,
-  YOU_DONT_OPPORTUNITY,
-} from '../consts';
 import { DatabaseService } from '../database';
 import { TokenService } from '../token';
 import { Request } from 'express';
+import { SUCCESS_ADD_IMAGE, NOT_ADD_IMAGE } from '../consts';
+import {
+  getTokenFromRequest,
+  verifyAdminToken,
+  ensureAdminExists,
+} from './services';
 
 @Injectable()
 export class UploadsImgService {
@@ -21,12 +21,14 @@ export class UploadsImgService {
     private readonly tokenService: TokenService,
   ) {}
 
-  async postImg(file, request: Request) {
+  async postImg(file: string, request: Request) {
     try {
-      const token = this.getTokenFromRequest(request);
-      const adminId = await this.verifyAdminToken(token);
-
-      await this.ensureAdminExists(adminId);
+      const token: string = getTokenFromRequest(request);
+      const adminId: { id: string } = await verifyAdminToken(
+        token,
+        this.tokenService,
+      );
+      await ensureAdminExists(adminId, this.dataBase);
 
       return {
         message: SUCCESS_ADD_IMAGE,
@@ -37,32 +39,7 @@ export class UploadsImgService {
     }
   }
 
-  private getTokenFromRequest(request: Request): string {
-    const token = setToken(request);
-    if (!token) {
-      throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
-    }
-    return token;
-  }
-
-  private async verifyAdminToken(token: string): Promise<{ id: string }> {
-    try {
-      return await this.tokenService.verifyToken(token);
-    } catch {
-      throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
-    }
-  }
-
-  private async ensureAdminExists(adminId: { id: string }): Promise<void> {
-    const admin = await this.dataBase.admin.findUnique({
-      where: { id: adminId.id },
-    });
-    if (!admin) {
-      throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
-    }
-  }
-
-  private handleError(error) {
+  private handleError(error: string | HttpException) {
     if (error instanceof HttpException) {
       throw error;
     }

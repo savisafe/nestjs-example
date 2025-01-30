@@ -17,59 +17,31 @@ import {
 } from '../consts';
 import { TokenService } from '../token';
 import { setToken } from '../functions';
-import slugify from 'slugify';
-
+import { IArticle } from '../types';
+import e from 'express';
+import {
+  addArticleForDatabase,
+  deleteArticleForDatabase,
+  editArticleForDatabase,
+  findArticleForTitleForDatabase,
+  getArticlesFromDatabase,
+  getCategoryArticlesFromDatabase,
+} from './services';
+import { findArticleForDatabase } from './services/find-article-for-database';
+import { AddArticle, EditDto } from './dto';
 @Injectable()
 export class ArticlesService {
   constructor(
     private readonly dataBase: DatabaseService,
     private readonly tokenService: TokenService,
   ) {}
-  async getArticles(request) {
-    const token = setToken(request);
+  async getArticles(request: e.Request) {
     try {
-      let articles;
-      if (!token) {
-        articles = await this.dataBase.article.findMany({
-          where: { draft: false },
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            description: true,
-            date: true,
-            author: true,
-            category: true,
-            language: true,
-            preview_image: true,
-          },
-        });
-      } else {
-        const adminId = await this.tokenService.verifyToken(token);
-        const findAdmin = await this.dataBase.admin.findUnique({
-          where: { id: adminId.id },
-        });
-        articles = await this.dataBase.article.findMany({
-          where: findAdmin ? {} : { draft: false },
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            description: true,
-            date: true,
-            author: true,
-            category: true,
-            language: true,
-            preview_image: true,
-            draft: true,
-          },
-        });
-      }
-
-      if (!articles || articles.length === 0) {
-        throw new HttpException(NO_ARTICLES_FOUND, HttpStatus.NOT_FOUND);
-      }
-
+      const articles = await getArticlesFromDatabase(
+        request,
+        this.tokenService,
+        this.dataBase,
+      );
       return { articles, statusCode: HttpStatus.OK };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -81,29 +53,20 @@ export class ArticlesService {
       );
     }
   }
-  async getCategoryArticles(category, language, page, pageSize) {
+  async getCategoryArticles(
+    category: Extract<IArticle, 'category'>,
+    language: Extract<IArticle, 'language'>,
+    page: number,
+    pageSize: number,
+  ) {
     try {
-      if (!category || !language) {
-        throw new HttpException(
-          'Missing required parameters',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-      const take = Number(pageSize);
-      const skip = (page - 1) * take;
-      const articles = await this.dataBase.article.findMany({
-        where: {
-          category,
-          language,
-          draft: false,
-        },
-        skip,
-        take,
-      });
-      const totalArticles = await this.dataBase.article.count({
-        where: { category, language, draft: false },
-      });
-
+      const { articles, totalArticles } = await getCategoryArticlesFromDatabase(
+        category,
+        language,
+        page,
+        pageSize,
+        this.dataBase,
+      );
       if (articles.length === 0) {
         throw new HttpException(NO_ARTICLES_FOUND, HttpStatus.BAD_REQUEST);
       }
@@ -123,58 +86,19 @@ export class ArticlesService {
       );
     }
   }
-  async findArticle(slug, request) {
-    const token = setToken(request);
+  async findArticle(slug: string, request: e.Request) {
     try {
-      let article;
-      if (!token) {
-        article = await this.dataBase.article.findUnique({
-          where: {
-            slug,
-            draft: false,
-          },
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            description: true,
-            date: true,
-            author: true,
-            category: true,
-            language: true,
-            preview_image: true,
-          },
-        });
-      } else {
-        const adminId = await this.tokenService.verifyToken(token);
-        const findAdmin = await this.dataBase.admin.findUnique({
-          where: { id: adminId.id },
-        });
-        article = await this.dataBase.article.findUnique({
-          where: findAdmin
-            ? { slug }
-            : {
-                slug,
-                draft: false,
-              },
-          select: findAdmin
-            ? undefined
-            : {
-                id: true,
-                title: true,
-                slug: true,
-                description: true,
-                date: true,
-                author: true,
-                category: true,
-                language: true,
-              },
-        });
-      }
-      if (!article || article.length === 0) {
+      const token = setToken(request);
+      const result = await findArticleForDatabase(
+        slug,
+        token,
+        this.dataBase,
+        this.tokenService,
+      );
+      if (!result.article || result.article.length === 0) {
         throw new HttpException(NO_ARTICLE_FOUND, HttpStatus.NOT_FOUND);
       }
-      return { article, statusCode: HttpStatus.OK };
+      return { article: result.article, statusCode: HttpStatus.OK };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -182,69 +106,19 @@ export class ArticlesService {
       throw new InternalServerErrorException(FAILED_TO_RETRIEVE_ARTICLE, error);
     }
   }
-  async findArticleForTitle(title, request) {
-    const token = setToken(request);
+  async findArticleForTitle(title: string, request: e.Request) {
     try {
-      let article;
-      if (!token) {
-        article = await this.dataBase.article.findMany({
-          where: {
-            title: {
-              contains: title,
-              mode: 'insensitive',
-            },
-            draft: false,
-          },
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            description: true,
-            date: true,
-            author: true,
-            category: true,
-            language: true,
-            preview_image: true,
-          },
-        });
-      } else {
-        const adminId = await this.tokenService.verifyToken(token);
-        const findAdmin = await this.dataBase.admin.findUnique({
-          where: { id: adminId.id },
-        });
-        article = await this.dataBase.article.findMany({
-          where: findAdmin
-            ? {
-                title: {
-                  contains: title,
-                  mode: 'insensitive',
-                },
-              }
-            : {
-                title: {
-                  contains: title,
-                  mode: 'insensitive',
-                },
-                draft: false,
-              },
-          select: findAdmin
-            ? undefined
-            : {
-                id: true,
-                title: true,
-                slug: true,
-                description: true,
-                date: true,
-                author: true,
-                category: true,
-                language: true,
-              },
-        });
-      }
-      if (!article || article.length === 0) {
+      const token = setToken(request);
+      const result = await findArticleForTitleForDatabase(
+        title,
+        token,
+        this.dataBase,
+        this.tokenService,
+      );
+      if (!result.article || result.article.length === 0) {
         throw new HttpException(NO_ARTICLE_FOUND, HttpStatus.NOT_FOUND);
       }
-      return { article, statusCode: HttpStatus.OK };
+      return { article: result.article, statusCode: HttpStatus.OK };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -252,50 +126,22 @@ export class ArticlesService {
       throw new InternalServerErrorException(FAILED_TO_RETRIEVE_ARTICLE, error);
     }
   }
-
-  async addArticle(data, request) {
-    const token = setToken(request);
-    const { title, description, author, category, language, preview_image } =
-      data;
-
+  async addArticle(data: AddArticle, request: e.Request) {
+    const token: string = setToken(request);
     if (!token) {
       throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
     }
-
     try {
-      const adminId = await this.tokenService.verifyToken(token);
-      const findAdmin = await this.dataBase.admin.findUnique({
-        where: { id: adminId.id },
-      });
-
-      if (!findAdmin) {
-        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
-      }
-
-      const slug = slugify(title, {
-        lower: true,
-        strict: true,
-      });
-
-      const createArticle = await this.dataBase.article.create({
-        data: {
-          title,
-          slug: slug,
-          description,
-          date: new Date(),
-          author,
-          category,
-          draft: true,
-          language,
-          preview_image: preview_image || '',
-        },
-      });
-
-      if (!createArticle) {
+      const result = await addArticleForDatabase(
+        data,
+        token,
+        this.dataBase,
+        this.tokenService,
+      );
+      if (!result.createArticle) {
         throw new InternalServerErrorException(FAILED_TO_CREATE_ARTICLE);
       }
-
-      return { article: createArticle, statusCode: HttpStatus.CREATED };
+      return { article: result.createArticle, statusCode: HttpStatus.CREATED };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -303,89 +149,44 @@ export class ArticlesService {
       throw new InternalServerErrorException(FAILED_TO_CREATE_ARTICLE, error);
     }
   }
-  async editArticle(id, data, request) {
-    const token = setToken(request);
-    const {
-      title,
-      description,
-      date,
-      author,
-      category,
-      draft,
-      language,
-      preview_image,
-    } = data;
-
+  async editArticle(id: string, data: EditDto, request: e.Request) {
+    const token: string = setToken(request);
     try {
-      if (!token)
-        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
-      const adminId = await this.tokenService.verifyToken(token);
-      const findAdmin = await this.dataBase.admin.findUnique({
-        where: { id: adminId.id },
-      });
-      if (!findAdmin)
-        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
-      const findArticle = await this.dataBase.article.findUnique({
-        where: { id },
-      });
-      if (!findArticle)
-        throw new HttpException(NO_ARTICLE_FOUND, HttpStatus.BAD_REQUEST);
-      const slug = slugify(title || findArticle.title, {
-        lower: true,
-        strict: true,
-      });
-      const updateData = await this.dataBase.article.update({
-        where: {
-          id,
-        },
-        data: {
-          title,
-          description,
-          slug,
-          date,
-          author,
-          category,
-          draft,
-          language,
-          preview_image,
-        },
-      });
+      const result = await editArticleForDatabase(
+        id,
+        data,
+        token,
+        this.dataBase,
+        this.tokenService,
+      );
+      if (!result.updateData) {
+        throw new InternalServerErrorException(FAILED_TO_CHANGE_ARTICLE);
+      }
       return {
-        article: updateData,
+        article: result.updateData,
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
-      console.error(FAILED_TO_CHANGE_ARTICLE, error);
       if (error instanceof HttpException) {
         throw error;
       }
       throw new InternalServerErrorException(FAILED_TO_CHANGE_ARTICLE, error);
     }
   }
-  async deleteArticle(id, request) {
-    const token = setToken(request);
+  async deleteArticle(id: string, request: e.Request) {
+    const token: string = setToken(request);
     try {
-      if (!token) {
-        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
+      const result = await deleteArticleForDatabase(
+        id,
+        token,
+        this.dataBase,
+        this.tokenService,
+      );
+      if (!result.deletedArticle) {
+        throw new InternalServerErrorException(FAILED_TO_DELETE_ARTICLE);
       }
-      const adminId = await this.tokenService.verifyToken(token);
-      const findAdmin = await this.dataBase.admin.findUnique({
-        where: { id: adminId.id },
-      });
-      if (!findAdmin) {
-        throw new HttpException(YOU_DONT_OPPORTUNITY, HttpStatus.FORBIDDEN);
-      }
-      const findArticle = await this.dataBase.article.findUnique({
-        where: { id },
-      });
-      if (!findArticle) {
-        throw new HttpException(NO_ARTICLE_FOUND, HttpStatus.BAD_REQUEST);
-      }
-      const article = await this.dataBase.article.delete({
-        where: { id },
-      });
       return {
-        article,
+        article: result.deletedArticle,
         statusCode: HttpStatus.OK,
       };
     } catch (error) {

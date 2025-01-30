@@ -16,7 +16,7 @@ export class AdminController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async get_admin(@Req() request) {
+  async get_admin(@Req() request: Request) {
     return this.loginService.getAdmin(request);
   }
   @Post()

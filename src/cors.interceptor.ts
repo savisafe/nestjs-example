@@ -11,16 +11,14 @@ export class CorsInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const response = context.switchToHttp().getResponse();
     const request = context.switchToHttp().getRequest();
-    // Получаем список разрешённых доменов из переменных окружения
     const allowedOrigins = [
-      process.env.CORS_DOMEN, // Основной домен
-      process.env.CORS_DOMEN_LOCAL, // Локальный домен
-    ].filter(Boolean); // Убираем undefined, если переменные не заданы
+      process.env.CORS_DOMEN,
+      process.env.CORS_DOMEN_LOCAL,
+    ].filter(Boolean);
 
     const origin = request.headers.origin;
 
     if (allowedOrigins.includes(origin)) {
-      // Устанавливаем заголовки CORS, если источник разрешён
       response.setHeader('Access-Control-Allow-Origin', origin);
       response.setHeader(
         'Access-Control-Allow-Methods',
@@ -30,7 +28,7 @@ export class CorsInterceptor implements NestInterceptor {
         'Access-Control-Allow-Headers',
         'Content-Type, Authorization',
       );
-      response.setHeader('Access-Control-Allow-Credentials', 'true'); // Если нужно передавать куки или авторизацию
+      response.setHeader('Access-Control-Allow-Credentials', 'true');
     }
 
     return next.handle();

@@ -6,19 +6,21 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from '../database';
 import { FAILED_TO_CATEGORIES } from '../consts';
+import { getCategoriesFromDatabase } from './services';
+import { Article } from '@prisma/client';
 
 @Injectable()
 export class CategoriesService {
   constructor(private readonly dataBase: DatabaseService) {}
 
-  async getCategories(language) {
+  async getCategories(language: Extract<Article, 'language'>) {
     try {
-      const categories = await this.dataBase.article.findMany({
-        where: { draft: false, language },
-        select: { category: true },
-      });
+      const categories = await getCategoriesFromDatabase(
+        language,
+        this.dataBase,
+      );
       return {
-        categories: [...new Set(categories.map(({ category }) => category))],
+        categories,
         statusCode: HttpStatus.OK,
       };
     } catch (error) {

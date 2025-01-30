@@ -1,45 +1,25 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database';
 import { LanguageEnum } from '../types';
+import { HttpStatus, InternalServerErrorException } from '@nestjs/common';
+import {
+  getFreshArticle,
+  getCategories,
+  getArticlesByCategory,
+} from './services';
 import { FAILED_TO_RETRIEVE_ARTICLES } from '../consts';
-import { Prisma } from '@prisma/client';
-
 @Injectable()
 export class LanguageService {
   constructor(private readonly dataBase: DatabaseService) {}
-
   async getArticleToLanguage(language: LanguageEnum) {
     try {
-      const freshArticleArgs: Prisma.ArticleFindFirstArgs = {
-        where: {
-          language,
-          draft: false,
-        },
-        orderBy: { date: 'desc' },
-        select: {
-          title: true,
-          slug: true,
-          description: true,
-          date: true,
-          author: true,
-          category: true,
-          language: true,
-          preview_image: true,
-        },
-      };
-      const freshArticle =
-        await this.dataBase.article.findFirst(freshArticleArgs);
-      const categories = await this.getCategories(language);
-      const categoryArticles = await this.getArticlesByCategory(
+      const freshArticle = await getFreshArticle(language, this.dataBase);
+      const categories = await getCategories(language, this.dataBase);
+      const categoryArticles = await getArticlesByCategory(
         categories,
         language,
+        this.dataBase,
       );
-
       return {
         statusCode: HttpStatus.OK,
         language,
@@ -50,43 +30,7 @@ export class LanguageService {
       this.handleError(error);
     }
   }
-
-  private async getCategories(language: LanguageEnum): Promise<string[]> {
-    const articles = await this.dataBase.article.findMany({
-      where: { draft: false, language },
-      select: { category: true },
-    });
-    return [...new Set(articles.map((item) => item.category))];
-  }
-
-  private async getArticlesByCategory(categories, language: LanguageEnum) {
-    return Promise.all(
-      categories.map(async (category) => {
-        const freshArticleArgs: Prisma.ArticleFindFirstArgs = {
-          where: {
-            language,
-            category,
-          },
-          take: 3,
-          orderBy: { date: 'desc' },
-          select: {
-            title: true,
-            slug: true,
-            description: true,
-            date: true,
-            author: true,
-            category: true,
-            language: true,
-            preview_image: true,
-          },
-        };
-        const articles = await this.dataBase.article.findMany(freshArticleArgs);
-        return { category, articles };
-      }),
-    );
-  }
-
-  private handleError(error) {
+  private handleError(error: string | HttpException) {
     if (error instanceof HttpException) {
       throw error;
     }

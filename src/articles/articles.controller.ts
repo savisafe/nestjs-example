@@ -10,7 +10,6 @@ import {
   Put,
   Query,
   Req,
-  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -18,7 +17,8 @@ import { ArticlesService } from './articles.service';
 import { AddArticle, EditDto } from './dto';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Request, Response } from 'express';
+import { Request } from 'express';
+import { IArticle } from '../types';
 
 @Controller('articles')
 export class ArticlesController {
@@ -26,17 +26,17 @@ export class ArticlesController {
   // Админу
   @Get()
   @HttpCode(HttpStatus.OK)
-  async get_articles(@Req() request) {
+  async get_articles(@Req() request: Request) {
     return this.articleService.getArticles(request);
   }
   // На получение статьи по категории
   @Get('category/:category')
   @HttpCode(HttpStatus.OK)
   async get_category_articles(
-    @Param('category') category,
-    @Query('language') language,
-    @Query('page') page,
-    @Query('pageSize') pageSize,
+    @Param('category') category: Extract<IArticle, 'category'>,
+    @Query('language') language: Extract<IArticle, 'language'>,
+    @Query('page') page: number,
+    @Query('pageSize') pageSize: number,
   ) {
     return this.articleService.getCategoryArticles(
       category,
@@ -48,14 +48,17 @@ export class ArticlesController {
   // На получение статьи по slug
   @Get(':slug')
   @HttpCode(HttpStatus.OK)
-  async find_article(@Param('slug') slug: string, @Req() request) {
+  async find_article(@Param('slug') slug: string, @Req() request: Request) {
     return this.articleService.findArticle(slug, request);
   }
 
   // На получение статьи по поиску
   @Get('/search/:title')
   @HttpCode(HttpStatus.OK)
-  async find_article_for_title(@Param('title') title: string, @Req() request) {
+  async find_article_for_title(
+    @Param('title') title: string,
+    @Req() request: Request,
+  ) {
     return this.articleService.findArticleForTitle(title, request);
   }
 
@@ -66,7 +69,7 @@ export class ArticlesController {
     FileInterceptor('file', {
       storage: diskStorage({
         destination: './uploads',
-        filename: (req, file, cb) => {
+        filename: (req: Request, file, cb) => {
           cb(null, `${file.originalname}`);
         },
       }),
@@ -76,7 +79,7 @@ export class ArticlesController {
     @Param('id') id: string,
     @Body() dto: EditDto,
     @UploadedFile() file: Express.Multer.File,
-    @Req() request,
+    @Req() request: Request,
   ) {
     let previewImage = dto.preview_image;
     if (file) {
@@ -92,7 +95,7 @@ export class ArticlesController {
   // На создание статьи
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async add_article(@Body() dto: AddArticle, @Req() request) {
+  async add_article(@Body() dto: AddArticle, @Req() request: Request) {
     return this.articleService.addArticle(dto, request);
   }
   // На удаление статьи по id
