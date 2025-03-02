@@ -1,17 +1,22 @@
+#### Project Description
+This EXAMPLE project is a full-stack application built with NestJS, Prisma, and PostgreSQL for managing a backend service. It
+uses Prisma as an ORM for handling database operations and is designed for efficient development and deployment in both
+local and Dockerized environments.
+
 #### HOW FIRST START
-- git clone https://gitlab.d.secwhapi.net/whoer/whox-blog-backend.git
-- Download Postgres (для локального поднятия бд)
-- download pgAdmin4 (для просмотра статуса бд)
-- смотрим в файл env оставляем либо локальную бд, либо продовскую бд
+
+- git clone
+- Download Postgres (for local db)
+- download pgAdmin4 (for view status db)
 - yarn install
-- npx prisma (для просмотра команд)
+- npx prisma (for view command)
 - npx prisma init
 - npx prisma generate
 - yarn start:dev
-- локально запросы доступны по - http://localhost:3002/api/
-- продовская бд доступна по - https://blog-backend.whox.is/api/
+- local response by - http://localhost:3002/api/
 
 #### Dockerfile
+
 - FROM node:latest
 - WORKDIR /app
 - COPY package*.json ./
@@ -24,6 +29,7 @@
 - CMD [ "npm", "run", "start:prod" ]
 
 #### docker-compose.yml
+
 - version: "3"
 - services:
 - backend:
@@ -31,6 +37,8 @@
 - context: .
 - dockerfile: Dockerfile
 - ports:
-- - 3002:3002
+-
+    - 3002:3002
 - volumes:
-- - .:/app
+-
+    - .:/app
